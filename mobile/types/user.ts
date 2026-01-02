@@ -1,4 +1,4 @@
-export type UserRole = "client" | "seller"
+export type UserRole = 'client' | 'seller';
 
 export interface User {
   id: string;
@@ -8,6 +8,7 @@ export interface User {
 }
 
 export interface AuthResponse {
-    user: User;
-    token: string;
+  user: User;
+  token: string;
+  refreshToken: string;
 }

@@ -1,3 +1,4 @@
+import { supabase } from '@/config/supabase';
 import { authService, ServiceResponse } from '@/services/auth.service';
 import { LoginCredentials, RegisterCredentials } from '@/types/auth';
 import { User } from '@/types/user';
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const STORAGE_KEYS = {
   USER: 'user',
   TOKEN: 'token',
+  REFRESH_TOKEN: 'refresh_token',
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -33,18 +35,59 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const initializeAuth = async () => {
     try {
-      const storedUser = await AsyncStorage.getItem(STORAGE_KEYS.USER);
-      const storedToken = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      // First, try to get the current session from Supabase
+      // Supabase automatically persists sessions, so this should work
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-      if (storedUser && storedToken) {
-        const userData = JSON.parse(storedUser);
-
+      if (session && !sessionError) {
+        // We have a valid Supabase session, get user data
         const response = await authService.getCurrentUser();
         if (response.success && response.data) {
           setUser(response.data);
+          // Update stored tokens to keep them in sync
+          await AsyncStorage.multiSet([
+            [STORAGE_KEYS.USER, JSON.stringify(response.data)],
+            [STORAGE_KEYS.TOKEN, session.access_token],
+            [STORAGE_KEYS.REFRESH_TOKEN, session.refresh_token],
+          ]);
         } else {
           await clearStorage();
-          router.replace('./(auth)/login');
+        }
+      } else {
+        // No active session, try to restore from stored refresh token
+        const storedRefreshToken = await AsyncStorage.getItem(
+          STORAGE_KEYS.REFRESH_TOKEN
+        );
+        const storedUser = await AsyncStorage.getItem(STORAGE_KEYS.USER);
+
+        if (storedRefreshToken && storedUser) {
+          // Try to refresh the session using the stored refresh token
+          const { data: refreshData, error: refreshError } =
+            await supabase.auth.refreshSession({
+              refresh_token: storedRefreshToken,
+            });
+
+          if (refreshData.session && !refreshError) {
+            // Session refreshed successfully
+            const response = await authService.getCurrentUser();
+            if (response.success && response.data) {
+              setUser(response.data);
+              // Update stored tokens
+              await AsyncStorage.multiSet([
+                [STORAGE_KEYS.USER, JSON.stringify(response.data)],
+                [STORAGE_KEYS.TOKEN, refreshData.session.access_token],
+                [STORAGE_KEYS.REFRESH_TOKEN, refreshData.session.refresh_token],
+              ]);
+            } else {
+              await clearStorage();
+            }
+          } else {
+            // Refresh failed, clear storage
+            await clearStorage();
+          }
         }
       }
     } catch (error: any) {
@@ -56,7 +99,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const clearStorage = async () => {
-    await AsyncStorage.multiRemove([STORAGE_KEYS.USER, STORAGE_KEYS.TOKEN]);
+    await AsyncStorage.multiRemove([
+      STORAGE_KEYS.USER,
+      STORAGE_KEYS.TOKEN,
+      STORAGE_KEYS.REFRESH_TOKEN,
+    ]);
     setUser(null);
   };
 
@@ -70,6 +117,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await AsyncStorage.multiSet([
           [STORAGE_KEYS.USER, JSON.stringify(response.data.user)],
           [STORAGE_KEYS.TOKEN, response.data.token],
+          [STORAGE_KEYS.REFRESH_TOKEN, response.data.refreshToken],
         ]);
         setUser(response.data.user);
       }
@@ -96,6 +144,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await AsyncStorage.multiSet([
           [STORAGE_KEYS.USER, JSON.stringify(response.data.user)],
           [STORAGE_KEYS.TOKEN, response.data.token],
+          [STORAGE_KEYS.REFRESH_TOKEN, response.data.refreshToken],
         ]);
         setUser(response.data.user);
       }

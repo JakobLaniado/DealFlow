@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const STORAGE_KEYS = {
   USER: 'user',
   TOKEN: 'token',
+  REFRESH_TOKEN: 'refresh_token',
 };
 
 export default function AuthCallback() {
@@ -32,6 +33,7 @@ export default function AuthCallback() {
             await AsyncStorage.multiSet([
               [STORAGE_KEYS.USER, JSON.stringify(response.data)],
               [STORAGE_KEYS.TOKEN, session.access_token],
+              [STORAGE_KEYS.REFRESH_TOKEN, session.refresh_token],
             ]);
             router.replace('./(tabs)/home');
           } else {

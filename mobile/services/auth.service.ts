@@ -56,6 +56,7 @@ export const authService = {
             role: userData.role as UserRole,
           },
           token: data.session.access_token,
+          refreshToken: data.session.refresh_token,
         },
       };
     } catch (error: any) {
@@ -130,6 +131,7 @@ export const authService = {
             role: userData.role as UserRole,
           },
           token: data.session.access_token,
+          refreshToken: data.session.refresh_token,
         },
       };
     } catch (error: any) {

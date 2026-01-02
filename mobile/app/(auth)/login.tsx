@@ -1,5 +1,6 @@
 import { useAuth } from '@/app/contexts/AuthContext';
 import { LoginCredentials } from '@/types/auth';
+import { colors } from '@/utils/theme';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -31,7 +32,7 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (result.success) {
-      router.replace('./(tabs)/home');
+      router.replace('/(tabs)/home');
     } else {
       Alert.alert('Login failed', result.error || 'Invalid credentials');
     }
@@ -92,7 +93,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     padding: 20,
   },
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
-    color: '#333',
+    color: colors.text,
   },
   subtitle: {
     fontSize: 16,
@@ -121,25 +122,26 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border,
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
+    color: colors.text,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.primary,
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: colors.border,
   },
   buttonText: {
-    color: 'white',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -148,7 +150,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   linkText: {
-    color: '#007AFF',
+    color: colors.primary,
     fontSize: 14,
   },
 });
