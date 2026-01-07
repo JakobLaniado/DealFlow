@@ -1,3 +1,4 @@
+import { borderRadius, colors, spacing, typography } from '@/utils/theme';
 import React from 'react';
 import {
   StyleSheet,
@@ -6,7 +7,6 @@ import {
   TouchableOpacityProps,
   ViewStyle,
 } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '@/utils/theme';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -30,7 +30,7 @@ export const Button: React.FC<ButtonProps> = ({
     styles[`button_${size}`],
     fullWidth && styles.fullWidth,
     disabled && styles.buttonDisabled,
-    style,
+    style as ViewStyle,
   ];
 
   const textStyle = [
@@ -100,6 +100,3 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-
-
-

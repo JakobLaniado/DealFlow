@@ -2,7 +2,6 @@ import { supabase } from '@/config/supabase';
 import { authService, ServiceResponse } from '@/services/auth.service';
 import { LoginCredentials, RegisterCredentials } from '@/types/auth';
 import { User } from '@/types/user';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
@@ -18,91 +17,111 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
-  USER: 'user',
-  TOKEN: 'token',
-  REFRESH_TOKEN: 'refresh_token',
-};
-
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    initializeAuth();
+    let mounted = true;
+    let subscription: { unsubscribe: () => void } | null = null;
+
+    // Safety timeout - always set loading to false after 10 seconds
+    const safetyTimeout = setTimeout(() => {
+      if (mounted) {
+        console.warn('Auth initialization timeout - forcing loading to false');
+        setLoading(false);
+      }
+    }, 10000);
+
+    const init = async () => {
+      try {
+        // Initialize auth state
+        await initializeAuth();
+
+        // Listen to auth state changes
+        if (supabase?.auth && mounted) {
+          const {
+            data: { subscription: authSubscription },
+          } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (!mounted) return;
+
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+              if (session) {
+                await loadUser();
+              }
+            } else if (event === 'SIGNED_OUT') {
+              setUser(null);
+            }
+          });
+          subscription = authSubscription;
+        }
+      } catch (error) {
+        console.error('Error setting up auth:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      } finally {
+        clearTimeout(safetyTimeout);
+      }
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimeout);
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, []);
 
   const initializeAuth = async () => {
     try {
-      // First, try to get the current session from Supabase
-      // Supabase automatically persists sessions, so this should work
+      if (!supabase || !supabase.auth) {
+        console.error('Supabase client is not initialized');
+        setUser(null);
+        return;
+      }
+
+      // Get current session (Supabase handles persistence automatically)
+      // Add timeout to prevent hanging
+      const sessionPromise = supabase.auth.getSession();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Session check timeout')), 5000),
+      );
+
       const {
         data: { session },
         error: sessionError,
-      } = await supabase.auth.getSession();
+      } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
 
       if (session && !sessionError) {
-        // We have a valid Supabase session, get user data
-        const response = await authService.getCurrentUser();
-        if (response.success && response.data) {
-          setUser(response.data);
-          // Update stored tokens to keep them in sync
-          await AsyncStorage.multiSet([
-            [STORAGE_KEYS.USER, JSON.stringify(response.data)],
-            [STORAGE_KEYS.TOKEN, session.access_token],
-            [STORAGE_KEYS.REFRESH_TOKEN, session.refresh_token],
-          ]);
-        } else {
-          await clearStorage();
-        }
+        await loadUser();
       } else {
-        // No active session, try to restore from stored refresh token
-        const storedRefreshToken = await AsyncStorage.getItem(
-          STORAGE_KEYS.REFRESH_TOKEN,
-        );
-        const storedUser = await AsyncStorage.getItem(STORAGE_KEYS.USER);
-
-        if (storedRefreshToken && storedUser) {
-          // Try to refresh the session using the stored refresh token
-          const { data: refreshData, error: refreshError } =
-            await supabase.auth.refreshSession({
-              refresh_token: storedRefreshToken,
-            });
-
-          if (refreshData.session && !refreshError) {
-            // Session refreshed successfully
-            const response = await authService.getCurrentUser();
-            if (response.success && response.data) {
-              setUser(response.data);
-              // Update stored tokens
-              await AsyncStorage.multiSet([
-                [STORAGE_KEYS.USER, JSON.stringify(response.data)],
-                [STORAGE_KEYS.TOKEN, refreshData.session.access_token],
-                [STORAGE_KEYS.REFRESH_TOKEN, refreshData.session.refresh_token],
-              ]);
-            } else {
-              await clearStorage();
-            }
-          } else {
-            // Refresh failed, clear storage
-            await clearStorage();
-          }
-        }
+        setUser(null);
       }
     } catch (error: any) {
       console.error('Error initializing auth:', error);
-      await clearStorage();
+      setUser(null);
     } finally {
+      // Always set loading to false, even if there's an error
       setLoading(false);
     }
   };
 
-  const clearStorage = async () => {
-    await AsyncStorage.multiRemove([
-      STORAGE_KEYS.USER,
-      STORAGE_KEYS.TOKEN,
-      STORAGE_KEYS.REFRESH_TOKEN,
-    ]);
-    setUser(null);
+  const loadUser = async () => {
+    try {
+      const response = await authService.getCurrentUser();
+      if (response.success && response.data) {
+        setUser(response.data);
+      } else {
+        setUser(null);
+      }
+    } catch (error: any) {
+      console.error('Error loading user:', error);
+      setUser(null);
+    }
   };
 
   const login = async (
@@ -112,12 +131,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const response = await authService.login(credentials);
 
       if (response.success && response.data) {
-        await AsyncStorage.multiSet([
-          [STORAGE_KEYS.USER, JSON.stringify(response.data.user)],
-          [STORAGE_KEYS.TOKEN, response.data.token],
-          [STORAGE_KEYS.REFRESH_TOKEN, response.data.refreshToken],
-        ]);
-        setUser(response.data.user);
+        // User will be loaded automatically via onAuthStateChange
+        await loadUser();
       }
 
       return {
@@ -139,13 +154,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const response = await authService.register(credentials);
 
       if (response.success && response.data) {
-        await AsyncStorage.multiSet([
-          [STORAGE_KEYS.USER, JSON.stringify(response.data.user)],
-          [STORAGE_KEYS.TOKEN, response.data.token],
-          [STORAGE_KEYS.REFRESH_TOKEN, response.data.refreshToken],
-        ]);
-        setUser(response.data.user);
+        // User will be loaded automatically via onAuthStateChange
+        await loadUser();
       }
+
       return {
         success: response.success,
         error: response.error ? response.error : undefined,
@@ -160,7 +172,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     await authService.logout();
-    await clearStorage();
+    setUser(null);
   };
 
   const value: AuthContextType = {

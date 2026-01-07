@@ -1,4 +1,4 @@
-import { getRedirectUrl, supabase } from '@/config/supabase';
+import { supabase } from '@/config/supabase';
 import { LoginCredentials, RegisterCredentials } from '@/types/auth';
 import { AuthResponse, User, UserRole } from '@/types/user';
 
@@ -10,7 +10,7 @@ export interface ServiceResponse<T> {
 
 export const authService = {
   async login(
-    credentials: LoginCredentials
+    credentials: LoginCredentials,
   ): Promise<ServiceResponse<AuthResponse>> {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -33,7 +33,7 @@ export const authService = {
       }
 
       //get user role from database
-      const { data: userData } = await supabase
+      const { data: userData, error: userError } = await supabase
         .from('users')
         .select('id, email, name, role')
         .eq('id', data.user.id)
@@ -68,7 +68,7 @@ export const authService = {
   },
 
   async register(
-    credentials: RegisterCredentials
+    credentials: RegisterCredentials,
   ): Promise<ServiceResponse<AuthResponse>> {
     try {
       if (credentials.password !== credentials.confirmPassword) {
@@ -82,7 +82,6 @@ export const authService = {
         email: credentials.email,
         password: credentials.password,
         options: {
-          emailRedirectTo: getRedirectUrl(),
           data: {
             name: credentials.name, // Store name in metadata for the trigger
           },
@@ -105,7 +104,7 @@ export const authService = {
 
       // Wait a moment for the database trigger to create the user profile
       // The trigger automatically creates the user profile with 'client' role
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Fetch the user profile created by the trigger
       const { data: userData, error: userError } = await supabase
@@ -117,7 +116,9 @@ export const authService = {
       if (userError || !userData) {
         return {
           success: false,
-          error: userError?.message || 'Failed to create user profile',
+          error:
+            userError?.message ||
+            'Failed to create user profile. Please try logging in.',
         };
       }
 
@@ -203,7 +204,7 @@ export const authService = {
 
   async updateUser(
     userId: string,
-    updates: Partial<User>
+    updates: Partial<User>,
   ): Promise<ServiceResponse<User>> {
     try {
       const { data, error } = await supabase
