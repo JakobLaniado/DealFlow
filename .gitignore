@@ -51,3 +51,5 @@ app-example
 *.docx
 
 .vscode/
+
+mobile/
