@@ -1,13 +1,47 @@
-import { DeeplinkHandler } from '@/components/DeeplinkHandler';
 import { useAuth } from '@/contexts/AuthContext';
-import { NavigationContainer } from '@react-navigation/native';
+import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Linking, StyleSheet, View } from 'react-native';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
 
 const Stack = createNativeStackNavigator();
+
+React.useEffect(() => {
+  Linking.getInitialURL().then(url => {
+    console.log('INITIAL URL:', url);
+  });
+
+  const sub = Linking.addEventListener('url', ({ url }) => {
+    console.log('RUNTIME URL:', url);
+  });
+
+  return () => sub.remove();
+}, []);
+
+const linking: LinkingOptions<any> = {
+  prefixes: ['DealFlow://'],
+  config: {
+    screens: {
+      Main: {
+        screens: {
+          Home: {
+            screens: {
+              JoinMeeting: {
+                path: 'join',
+                parse: {
+                  meetingId: (meetingId: string) => meetingId,
+                  password: (password: string) => password,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
 
 export const AppNavigator = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -21,8 +55,7 @@ export const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
-      <DeeplinkHandler />
+    <NavigationContainer linking={linking}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           <Stack.Screen name="Main" component={MainNavigator} />
