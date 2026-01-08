@@ -45,7 +45,7 @@ export async function createZoomMeeting(
   const passcode = data.password ?? "";
   const joinUrl = data.join_url ?? "";
 
-  const deeplinkUrl = `mobile://join?meetingId=${encodeURIComponent(
+  const deeplinkUrl = `DealFlow:///join?meetingId=${encodeURIComponent(
     meetingId
   )}&password=${encodeURIComponent(passcode)}`;
 

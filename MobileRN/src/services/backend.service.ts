@@ -1,6 +1,6 @@
-import { supabase } from '@/config/supabase';
+import { BACKEND_SERVER_URL } from '@env';
 
-const BACKEND_URL = process.env.BACKEND_SERVER_URL;
+const BACKEND_URL = BACKEND_SERVER_URL;
 
 export interface BackendResponse<T> {
   success: boolean;
@@ -17,6 +17,10 @@ export interface CreateMeetingRequest {
   title?: string;
   startTime?: string;
   duration?: number;
+  settings?: {
+    waiting_room?: boolean;
+    join_before_host?: boolean;
+  };
 }
 
 export interface Meeting {
@@ -38,44 +42,24 @@ export interface CreateMeetingResponse {
   meeting: Meeting;
 }
 
-/**
- * Get the current Supabase session token for API authentication
- */
-async function getAuthToken(): Promise<string | null> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return session?.access_token || null;
-}
-
 export const backendService = {
   /**
-   * Get Zoom SDK JWT token from backend
+   * Get Zoom SDK JWT token for initializing the Zoom SDK
    */
   async getZoomJWT(): Promise<BackendResponse<ZoomJWTResponse>> {
     try {
-      const token = await getAuthToken();
-      if (!token) {
-        return {
-          success: false,
-          error: 'Not authenticated',
-        };
-      }
-
       const response = await fetch(`${BACKEND_URL}/zoom/jwt`, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-
       const data = await response.json();
 
       if (!response.ok) {
         return {
           success: false,
-          error: data.error || 'Failed to get Zoom JWT',
+          error: data.error || 'Failed to get JWT',
         };
       }
 
@@ -98,18 +82,9 @@ export const backendService = {
     request: CreateMeetingRequest,
   ): Promise<BackendResponse<CreateMeetingResponse>> {
     try {
-      const token = await getAuthToken();
-      if (!token) {
-        return {
-          success: false,
-          error: 'Not authenticated',
-        };
-      }
-
-      const response = await fetch(`${BACKEND_URL}/meetings`, {
+      const response = await fetch(`${BACKEND_URL}/zoom/meetings`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(request),
@@ -120,90 +95,6 @@ export const backendService = {
         return {
           success: false,
           error: data.error || 'Failed to create meeting',
-        };
-      }
-
-      return {
-        success: true,
-        data: data.data,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Network error',
-      };
-    }
-  },
-
-  /**
-   * Get all meetings
-   */
-  async getMeetings(): Promise<BackendResponse<Meeting[]>> {
-    try {
-      const token = await getAuthToken();
-      if (!token) {
-        return {
-          success: false,
-          error: 'Not authenticated',
-        };
-      }
-
-      const response = await fetch(`${BACKEND_URL}/meetings`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.error || 'Failed to get meetings',
-        };
-      }
-
-      return {
-        success: true,
-        data: data.data,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Network error',
-      };
-    }
-  },
-
-  /**
-   * Get a specific meeting by ID
-   */
-  async getMeeting(meetingId: string): Promise<BackendResponse<Meeting>> {
-    try {
-      const token = await getAuthToken();
-      if (!token) {
-        return {
-          success: false,
-          error: 'Not authenticated',
-        };
-      }
-
-      const response = await fetch(`${BACKEND_URL}/meetings/${meetingId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.error || 'Failed to get meeting',
         };
       }
 

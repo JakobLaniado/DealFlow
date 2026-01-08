@@ -35,8 +35,27 @@ zoomRouter.get("/jwt", async (req, res) => {
 zoomRouter.post("/meetings", async (req, res) => {
   try {
     const zoomMeeting: Partial<ZoomMeeting> = req.body;
-    const meeting = await createZoomMeeting(zoomMeeting);
-    res.json(meeting);
+    const result = await createZoomMeeting(zoomMeeting);
+
+    res.json({
+      success: true,
+      data: {
+        meetingId: result.meetingId,
+        password: result.passcode,
+        deeplink: result.deeplinkUrl,
+        meeting: {
+          id: result.meetingId,
+          meeting_id: result.meetingId,
+          password: result.passcode,
+          title: zoomMeeting.topic || "Contract Call",
+          created_by: "user",
+          start_time: null,
+          duration: 60,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      },
+    });
   } catch (err: any) {
     res.status(500).json({ error: err?.message || "Failed to create meeting" });
   }

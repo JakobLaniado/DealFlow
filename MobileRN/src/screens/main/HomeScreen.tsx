@@ -26,6 +26,14 @@ export function HomeScreen() {
         {isSeller ? (
           <>
             <Button
+              title="MY MEETINGS"
+              variant="primary"
+              size="large"
+              fullWidth
+              onPress={() => navigation.navigate('MyMeetings' as never)}
+              style={styles.myMeetingsButton}
+            />
+            <Button
               title="CREATE NEW MEETING"
               variant="primary"
               size="large"
@@ -86,5 +94,9 @@ const styles = StyleSheet.create({
   },
   createButton: {
     maxWidth: 300,
+  },
+  myMeetingsButton: {
+    maxWidth: 300,
+    marginBottom: spacing.md,
   },
 });
