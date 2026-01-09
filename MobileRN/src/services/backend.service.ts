@@ -14,6 +14,7 @@ export interface ZoomJWTResponse {
 }
 
 export interface CreateMeetingRequest {
+  userId: string;
   title?: string;
   startTime?: string;
   duration?: number;

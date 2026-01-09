@@ -27,6 +27,7 @@ interface MeetingData {
   meetingId: string;
   password: string;
   deeplink: string;
+  host: boolean;
 }
 
 export function CreateMeetingScreen() {
@@ -36,7 +37,9 @@ export function CreateMeetingScreen() {
   // State
   const [isCreating, setIsCreating] = useState(false);
   const [meetingData, setMeetingData] = useState<MeetingData | null>(null);
-  const [meetingType, setMeetingType] = useState<'instant' | 'scheduled'>('instant');
+  const [meetingType, setMeetingType] = useState<'instant' | 'scheduled'>(
+    'instant',
+  );
   const [meetingTitle, setMeetingTitle] = useState('');
   const [startTime, setStartTime] = useState('');
   const [duration, setDuration] = useState(60);
@@ -45,10 +48,17 @@ export function CreateMeetingScreen() {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleCreateMeeting = async () => {
+    if (!user?.id) {
+      Alert.alert('Error', 'User not authenticated');
+      return;
+    }
+
     setIsCreating(true);
     try {
       const response = await backendService.createMeeting({
-        title: meetingTitle.trim() || `Meeting ${new Date().toLocaleDateString()}`,
+        userId: user.id,
+        title:
+          meetingTitle.trim() || `Meeting ${new Date().toLocaleDateString()}`,
         startTime: meetingType === 'scheduled' ? startTime : undefined,
         duration: meetingType === 'scheduled' ? duration : undefined,
         settings: {
@@ -62,6 +72,7 @@ export function CreateMeetingScreen() {
           meetingId: response.data.meetingId,
           password: response.data.password,
           deeplink: response.data.deeplink,
+          host: true,
         });
         Alert.alert('Success', 'Meeting created successfully!');
       } else {
@@ -89,6 +100,7 @@ export function CreateMeetingScreen() {
         meetingId: meetingData.meetingId,
         password: meetingData.password,
         displayName: user?.name,
+        isHost: true,
       });
     }
   };
@@ -245,7 +257,10 @@ export function CreateMeetingScreen() {
   return (
     <View style={styles.container}>
       <Header />
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+      >
         {!meetingData ? renderCreateForm() : renderMeetingInfo()}
       </ScrollView>
     </View>

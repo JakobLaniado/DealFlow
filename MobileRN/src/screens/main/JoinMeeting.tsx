@@ -25,7 +25,12 @@ export function JoinMeetingScreen() {
   const [isDeeplink, setIsDeeplink] = useState(false);
 
   const params = route.params as
-    | { meetingId?: string; password?: string; displayName?: string }
+    | {
+        meetingId?: string;
+        password?: string;
+        displayName?: string;
+        isHost?: boolean;
+      }
     | undefined;
 
   const [meetingId, setMeetingId] = useState(params?.meetingId || '');
@@ -33,6 +38,7 @@ export function JoinMeetingScreen() {
   const [displayName, setDisplayName] = useState(
     params?.displayName || user?.name || '',
   );
+  const [isHost, setIsHost] = useState(params?.isHost || false);
   const [isJoining, setIsJoining] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
 
@@ -125,7 +131,7 @@ export function JoinMeetingScreen() {
         userName: displayName.trim(),
         meetingNumber: meetingId.trim(),
         password: password.trim() || undefined,
-        userType: 0,
+        userType: isHost ? 1 : 0,
       });
     } catch (error: any) {
       Alert.alert('Failed to Join', error?.message || 'Please try again.');

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { requireSellerRole } from "../middleware/auth.middleware";
 import {
   createZoomMeeting,
   ZoomMeeting,
@@ -32,7 +33,7 @@ zoomRouter.get("/jwt", async (req, res) => {
  * POST /zoom/meetings
  * Creates a Zoom meeting (seller only in your app logic; backend doesn't enforce yet)
  */
-zoomRouter.post("/meetings", async (req, res) => {
+zoomRouter.post("/meetings", requireSellerRole, async (req, res) => {
   try {
     const zoomMeeting: Partial<ZoomMeeting> = req.body;
     const result = await createZoomMeeting(zoomMeeting);
