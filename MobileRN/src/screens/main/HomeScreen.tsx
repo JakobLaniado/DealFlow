@@ -16,7 +16,7 @@ export function HomeScreen() {
   };
 
   const handleJoinMeeting = () => {
-    // Do nothing for now
+    navigation.navigate('JoinMeeting' as never);
   };
 
   return (

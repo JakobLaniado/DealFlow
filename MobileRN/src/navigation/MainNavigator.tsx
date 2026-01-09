@@ -1,4 +1,5 @@
 import { ZoomProviderWrapper } from '@/components/ZoomProviderWrapper';
+import useAuth from '@/contexts/AuthContext';
 import { CreateMeetingScreen } from '@/screens/main/ CreateMeetingScreen';
 import { HomeScreen } from '@/screens/main/HomeScreen';
 import { JoinMeetingScreen } from '@/screens/main/JoinMeeting';
@@ -12,21 +13,28 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const HomeStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="HomeMain" component={HomeScreen} />
-    <Stack.Screen name="CreateMeeting" component={CreateMeetingScreen} />
-    <Stack.Screen name="MyMeetings" component={MyMeetingsScreen} />
-    <Stack.Screen name="Profile" component={ProfileScreen} />
-    <Stack.Screen name="JoinMeeting">
-      {() => (
-        <ZoomProviderWrapper>
-          <JoinMeetingScreen />
-        </ZoomProviderWrapper>
+const HomeStack = () => {
+  const { user } = useAuth();
+  const isSeller = user?.role === 'seller';
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="HomeMain" component={HomeScreen} />
+      {isSeller && (
+        <Stack.Screen name="CreateMeeting" component={CreateMeetingScreen} />
       )}
-    </Stack.Screen>
-  </Stack.Navigator>
-);
+      <Stack.Screen name="MyMeetings" component={MyMeetingsScreen} />
+      <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="JoinMeeting">
+        {() => (
+          <ZoomProviderWrapper>
+            <JoinMeetingScreen />
+          </ZoomProviderWrapper>
+        )}
+      </Stack.Screen>
+    </Stack.Navigator>
+  );
+};
 
 const MeetingsStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -42,6 +50,9 @@ const MeetingsStack = () => (
 );
 
 export const MainNavigator = () => {
+  const { user } = useAuth();
+  const isSeller = user?.role === 'seller';
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -63,19 +74,21 @@ export const MainNavigator = () => {
           ),
         }}
       />
-      <Tab.Screen
-        name="Meetings"
-        component={MeetingsStack}
-        options={{
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? 'videocam' : 'videocam-outline'}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
+      {isSeller && (
+        <Tab.Screen
+          name="Meetings"
+          component={MeetingsStack}
+          options={{
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons
+                name={focused ? 'videocam' : 'videocam-outline'}
+                size={size}
+                color={color}
+              />
+            ),
+          }}
+        />
+      )}
       <Tab.Screen
         name="profile"
         component={ProfileScreen}
