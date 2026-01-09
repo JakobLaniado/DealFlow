@@ -110,4 +110,40 @@ export const backendService = {
       };
     }
   },
+
+  /**
+   * Get SDK signature for joining a meeting
+   */
+  async getZoomSdkSignature(
+    meetingId: string,
+    role: 0 | 1,
+  ): Promise<BackendResponse<{ signature: string }>> {
+    try {
+      const response = await fetch(`${BACKEND_URL}/zoom/sdk-signature`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ meetingId, role }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || 'Failed to get SDK signature',
+        };
+      }
+
+      return {
+        success: true,
+        data: data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Network error',
+      };
+    }
+  },
 };

@@ -78,6 +78,10 @@ export function JoinMeetingScreen() {
     }
   }, [params, user]);
 
+  if (isHost) {
+    console.log('Host', user?.name || '');
+  }
+
   const openEditModal = (field: 'meetingId' | 'password' | 'displayName') => {
     setEditingField(field);
     if (field === 'meetingId') setTempValue(meetingId);

@@ -39,13 +39,7 @@ const HomeStack = () => {
 const MeetingsStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="CreateMeetingMain" component={CreateMeetingScreen} />
-    <Stack.Screen name="JoinMeeting">
-      {() => (
-        <ZoomProviderWrapper>
-          <JoinMeetingScreen />
-        </ZoomProviderWrapper>
-      )}
-    </Stack.Screen>
+    <Stack.Screen name="JoinMeeting" component={JoinMeetingScreen} />
   </Stack.Navigator>
 );
 
