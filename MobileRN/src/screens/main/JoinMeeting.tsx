@@ -1,5 +1,4 @@
 import { Button } from '@/components/Button';
-import { Header } from '@/components/Header';
 import useAuth from '@/contexts/AuthContext';
 import { colors, spacing, typography } from '@/utils/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -24,7 +23,6 @@ export function JoinMeetingScreen() {
   const route = useRoute();
   const { user } = useAuth();
   const zoom = useZoom();
-  const [isDeeplink, setIsDeeplink] = useState(false);
 
   const params = route.params as
     | {
@@ -216,7 +214,10 @@ export function JoinMeetingScreen() {
           meetingNumber: meetingId.trim(),
           zoomAccessToken: zakToken,
         };
-        console.log('[Zoom] Start meeting config:', JSON.stringify({ ...startConfig, zoomAccessToken: '***' }, null, 2));
+        console.log(
+          '[Zoom] Start meeting config:',
+          JSON.stringify({ ...startConfig, zoomAccessToken: '***' }, null, 2),
+        );
 
         const result = await zoom.startMeeting(startConfig);
         console.log('[Zoom] Start meeting result:', result);
@@ -231,7 +232,10 @@ export function JoinMeetingScreen() {
         userType: 0, // Always join as participant if no ZAK token
       };
 
-      console.log('[Zoom] Joining meeting with config:', JSON.stringify(joinConfig, null, 2));
+      console.log(
+        '[Zoom] Joining meeting with config:',
+        JSON.stringify(joinConfig, null, 2),
+      );
       const result = await zoom.joinMeeting(joinConfig);
       console.log('[Zoom] Join meeting result:', result);
     } catch (error: any) {
@@ -244,7 +248,6 @@ export function JoinMeetingScreen() {
 
   return (
     <View style={styles.container}>
-      <Header showProfile={false} />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}

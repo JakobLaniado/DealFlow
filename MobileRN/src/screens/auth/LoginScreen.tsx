@@ -26,11 +26,25 @@ export const LoginScreen = () => {
     }
 
     setLoading(true);
-    const result = await login({ email, password });
-    setLoading(false);
 
-    if (!result.success) {
-      Alert.alert('Login failed', result.error || 'Invalid credentials');
+    // Safety timeout - re-enable button after 10 seconds if login hangs
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      Alert.alert('Login Timeout', 'Login is taking too long. Please try again.');
+    }, 10000);
+
+    try {
+      const result = await login({ email, password });
+      clearTimeout(timeout);
+      setLoading(false);
+
+      if (!result.success) {
+        Alert.alert('Login failed', result.error || 'Invalid credentials');
+      }
+    } catch (error: any) {
+      clearTimeout(timeout);
+      setLoading(false);
+      Alert.alert('Login failed', error.message || 'An unexpected error occurred');
     }
   };
 

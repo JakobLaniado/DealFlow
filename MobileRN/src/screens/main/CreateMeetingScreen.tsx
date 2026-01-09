@@ -1,5 +1,4 @@
 import { Button } from '@/components/Button';
-import { Header } from '@/components/Header';
 import {
   CollapsibleSection,
   DurationSelector,
@@ -44,8 +43,8 @@ export function CreateMeetingScreen() {
   const [meetingTitle, setMeetingTitle] = useState('');
   const [startTime, setStartTime] = useState('');
   const [duration, setDuration] = useState(60);
-  const [waitingRoom, setWaitingRoom] = useState(true);
-  const [joinBeforeHost, setJoinBeforeHost] = useState(false);
+  const [waitingRoom, setWaitingRoom] = useState(false);
+  const [joinBeforeHost, setJoinBeforeHost] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleCreateMeeting = async () => {
@@ -120,8 +119,8 @@ export function CreateMeetingScreen() {
     setMeetingTitle('');
     setStartTime('');
     setDuration(60);
-    setWaitingRoom(true);
-    setJoinBeforeHost(false);
+    setWaitingRoom(false);
+    setJoinBeforeHost(true);
     setShowAdvanced(false);
   };
 
@@ -259,7 +258,6 @@ export function CreateMeetingScreen() {
 
   return (
     <View style={styles.container}>
-      <Header />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
