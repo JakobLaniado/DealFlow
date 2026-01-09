@@ -10,15 +10,12 @@ export const requireSellerRole = async (
   next: NextFunction
 ) => {
   const userId = req.body.userId;
-  console.log("userId", userId);
 
   const { data: user, error } = await supabase
     .from("users")
     .select("role")
     .eq("id", userId)
     .single();
-
-  console.log("userRole", user);
 
   if (error || !user || user.role !== "seller") {
     return res.status(403).json({ error: "Forbidden" });

@@ -8,6 +8,8 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Modal,
+  PermissionsAndroid,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -30,8 +32,11 @@ export function JoinMeetingScreen() {
         password?: string;
         displayName?: string;
         isHost?: boolean;
+        zakToken?: string | null; // ZAK token for host authentication
       }
     | undefined;
+
+  const zakToken = params?.zakToken;
 
   const [meetingId, setMeetingId] = useState(params?.meetingId || '');
   const [password, setPassword] = useState(params?.password || '');
@@ -51,17 +56,36 @@ export function JoinMeetingScreen() {
 
   useEffect(() => {
     let alive = true;
-    const timer = setInterval(async () => {
+    let timer: NodeJS.Timeout;
+
+    const checkStatus = async () => {
+      if (!zoom || !alive) return;
       try {
-        const ok = await zoom.isInitialized();
-        if (!alive) return;
-        setSdkReady(ok);
-        if (ok) clearInterval(timer);
-      } catch {
+        // Use a direct promise handle to ensure we catch everything
+        const promise = zoom.isInitialized();
+        if (promise && typeof promise.then === 'function') {
+          const ok = await promise;
+          if (!alive) return;
+          setSdkReady(ok);
+          if (ok) {
+            clearInterval(timer);
+          }
+        }
+      } catch (err: any) {
         if (!alive) return;
         setSdkReady(false);
+        // Only log activity errors to avoid console noise
+        if (err?.message?.includes('react native activity')) {
+          console.log('[Zoom] Activity not ready, will retry...');
+        } else {
+          console.warn('[Zoom] Initialization check failed:', err);
+        }
       }
-    }, 500);
+    };
+
+    timer = setInterval(checkStatus, 1500);
+    // Also check immediately
+    checkStatus();
 
     return () => {
       alive = false;
@@ -113,6 +137,52 @@ export function JoinMeetingScreen() {
     return '';
   };
 
+  const requestPermissions = async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return true; // iOS handles permissions via Info.plist prompts
+    }
+
+    try {
+      const permissions = [
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      ];
+
+      // Add Bluetooth permission for Android 12+ (API 31+)
+      if (Platform.Version >= 31) {
+        // @ts-ignore - newer permissions might not be in older type definitions
+        permissions.push(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
+      }
+
+      // Add Notification permission for Android 13+ (API 33+)
+      if (Platform.Version >= 33) {
+        // @ts-ignore
+        permissions.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+      }
+
+      const grants = await PermissionsAndroid.requestMultiple(permissions);
+
+      const cameraGranted =
+        grants[PermissionsAndroid.PERMISSIONS.CAMERA] ===
+        PermissionsAndroid.RESULTS.GRANTED;
+      const micGranted =
+        grants[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] ===
+        PermissionsAndroid.RESULTS.GRANTED;
+
+      if (!cameraGranted || !micGranted) {
+        Alert.alert(
+          'Permissions Required',
+          'Camera and microphone permissions are required to join a meeting. Please grant them in your device settings.',
+        );
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn('Permission request error:', err);
+      return false;
+    }
+  };
+
   const handleJoinMeeting = async () => {
     if (!meetingId.trim()) {
       Alert.alert('Error', 'Please enter a meeting ID');
@@ -129,15 +199,43 @@ export function JoinMeetingScreen() {
       return;
     }
 
+    // Request permissions before joining
+    const permissionsGranted = await requestPermissions();
+    if (!permissionsGranted) {
+      return;
+    }
+
     setIsJoining(true);
+
     try {
-      await zoom.joinMeeting({
+      // If host with ZAK token, use startMeeting
+      if (isHost && zakToken) {
+        console.log('[Zoom] Starting meeting as host with ZAK token...');
+        const startConfig = {
+          userName: displayName.trim(),
+          meetingNumber: meetingId.trim(),
+          zoomAccessToken: zakToken,
+        };
+        console.log('[Zoom] Start meeting config:', JSON.stringify({ ...startConfig, zoomAccessToken: '***' }, null, 2));
+
+        const result = await zoom.startMeeting(startConfig);
+        console.log('[Zoom] Start meeting result:', result);
+        return;
+      }
+
+      // Otherwise join as participant
+      const joinConfig = {
         userName: displayName.trim(),
         meetingNumber: meetingId.trim(),
         password: password.trim() || undefined,
-        userType: isHost ? 1 : 0,
-      });
+        userType: 0, // Always join as participant if no ZAK token
+      };
+
+      console.log('[Zoom] Joining meeting with config:', JSON.stringify(joinConfig, null, 2));
+      const result = await zoom.joinMeeting(joinConfig);
+      console.log('[Zoom] Join meeting result:', result);
     } catch (error: any) {
+      console.error('[Zoom] Meeting error:', error);
       Alert.alert('Failed to Join', error?.message || 'Please try again.');
     } finally {
       setIsJoining(false);

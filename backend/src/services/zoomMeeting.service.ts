@@ -1,6 +1,45 @@
 import axios from "axios";
 import { getZoomS2SToken } from "./zoomToken.service";
 
+/**
+ * Get ZAK (Zoom Access Key) token for the host user
+ * This is required when joining a meeting as host (userType: 1)
+ *
+ * With S2S OAuth, we need to use specific user email instead of "me"
+ */
+export async function getHostZakToken(userEmail?: string): Promise<string> {
+  const token = await getZoomS2SToken();
+
+  // Use provided email or fall back to env variable for default host
+  const email = userEmail || process.env.ZOOM_HOST_EMAIL;
+  if (!email) {
+    throw new Error("ZOOM_HOST_EMAIL environment variable is required for ZAK token");
+  }
+
+  console.log("[Zoom] Fetching ZAK token for:", email);
+
+  try {
+    const resp = await axios.get(
+      `https://api.zoom.us/v2/users/${encodeURIComponent(email)}/token?type=zak`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    console.log("[Zoom] ZAK token fetched successfully");
+    return resp.data.token;
+  } catch (err: any) {
+    // Log the actual error response from Zoom
+    if (err.response) {
+      console.error("[Zoom] ZAK error response:", {
+        status: err.response.status,
+        data: err.response.data,
+      });
+    }
+    throw err;
+  }
+}
+
 export type ZoomMeeting = {
   topic: string;
   type: number;

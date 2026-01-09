@@ -1,6 +1,6 @@
 import { ZoomProviderWrapper } from '@/components/ZoomProviderWrapper';
 import useAuth from '@/contexts/AuthContext';
-import { CreateMeetingScreen } from '@/screens/main/ CreateMeetingScreen';
+import { CreateMeetingScreen } from '@/screens/main/CreateMeetingScreen';
 import { HomeScreen } from '@/screens/main/HomeScreen';
 import { JoinMeetingScreen } from '@/screens/main/JoinMeeting';
 import { MyMeetingsScreen } from '@/screens/main/MyMeetingsScreen';
@@ -25,13 +25,7 @@ const HomeStack = () => {
       )}
       <Stack.Screen name="MyMeetings" component={MyMeetingsScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="JoinMeeting">
-        {() => (
-          <ZoomProviderWrapper>
-            <JoinMeetingScreen />
-          </ZoomProviderWrapper>
-        )}
-      </Stack.Screen>
+      <Stack.Screen name="JoinMeeting" component={JoinMeetingScreen} />
     </Stack.Navigator>
   );
 };
@@ -48,54 +42,56 @@ export const MainNavigator = () => {
   const isSeller = user?.role === 'seller';
 
   return (
-    <Tab.Navigator
-      screenOptions={{
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: 'gray',
-        headerShown: false,
-      }}
-    >
-      <Tab.Screen
-        name="Home"
-        component={HomeStack}
-        options={{
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? 'home' : 'home-outline'}
-              size={size}
-              color={color}
-            />
-          ),
+    <ZoomProviderWrapper>
+      <Tab.Navigator
+        screenOptions={{
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: 'gray',
+          headerShown: false,
         }}
-      />
-      {isSeller && (
+      >
         <Tab.Screen
-          name="Meetings"
-          component={MeetingsStack}
+          name="Home"
+          component={HomeStack}
           options={{
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
-                name={focused ? 'videocam' : 'videocam-outline'}
+                name={focused ? 'home' : 'home-outline'}
                 size={size}
                 color={color}
               />
             ),
           }}
         />
-      )}
-      <Tab.Screen
-        name="profile"
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? 'person' : 'person-outline'}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
-    </Tab.Navigator>
+        {isSeller && (
+          <Tab.Screen
+            name="Meetings"
+            component={MeetingsStack}
+            options={{
+              tabBarIcon: ({ focused, color, size }) => (
+                <Ionicons
+                  name={focused ? 'videocam' : 'videocam-outline'}
+                  size={size}
+                  color={color}
+                />
+              ),
+            }}
+          />
+        )}
+        <Tab.Screen
+          name="profile"
+          component={ProfileScreen}
+          options={{
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons
+                name={focused ? 'person' : 'person-outline'}
+                size={size}
+                color={color}
+              />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </ZoomProviderWrapper>
   );
 };

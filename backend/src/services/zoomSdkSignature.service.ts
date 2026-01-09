@@ -8,20 +8,16 @@ function mustEnv(name: string): string {
 
 /**
  * Meeting SDK signature (JWT) for native Meeting SDK
- * role: 0 = attendee, 1 = host
+ * @param meetingNumber - The Zoom meeting number
+ * @param role - 0 for participant, 1 for host
  */
-export function createMeetingSdkSignature(
-  meetingNumber: string,
-  role: 0 | 1
-): string {
+export function createMeetingSdkSignature(meetingNumber: string, role: 0 | 1 = 0): string {
   const sdkKey = mustEnv("ZOOM_SDK_CLIENT_ID");
   const sdkSecret = mustEnv("ZOOM_SDK_CLIENT_SECRET");
 
   const iat = Math.floor(Date.now() / 1000);
-  const exp = iat + 60 * 60; // 1 hour
+  const exp = iat + 60 * 60 * 2; // 2 hours validity
 
-  // Zoom expects specific claims for Meeting SDK signature.
-  // Keep it short-lived.
   const payload = {
     sdkKey,
     mn: meetingNumber,

@@ -123,6 +123,11 @@ dependencies {
     implementation("com.facebook.react:react-android")
     implementation("us.zoom.meetingsdk:zoomsdk:6.6.0")
 
+    // Coil image loader with GIF support - required by Zoom SDK
+    implementation "io.coil-kt:coil:2.5.0"
+    implementation "io.coil-kt:coil-gif:2.5.0"
+    implementation "io.coil-kt:coil-compose:2.5.0"
+
     // Jetpack Compose dependencies required by Zoom SDK
     def composeBomVersion = "2024.12.01"
     implementation platform("androidx.compose:compose-bom:$composeBomVersion")

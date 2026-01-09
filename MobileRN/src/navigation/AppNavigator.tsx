@@ -8,18 +8,6 @@ import { MainNavigator } from './MainNavigator';
 
 const Stack = createNativeStackNavigator();
 
-React.useEffect(() => {
-  Linking.getInitialURL().then(url => {
-    console.log('INITIAL URL:', url);
-  });
-
-  const sub = Linking.addEventListener('url', ({ url }) => {
-    console.log('RUNTIME URL:', url);
-  });
-
-  return () => sub.remove();
-}, []);
-
 const linking: LinkingOptions<any> = {
   prefixes: ['DealFlow://'],
   config: {
@@ -45,6 +33,18 @@ const linking: LinkingOptions<any> = {
 
 export const AppNavigator = () => {
   const { isAuthenticated, loading } = useAuth();
+
+  React.useEffect(() => {
+    Linking.getInitialURL().then(url => {
+      console.log('INITIAL URL:', url);
+    });
+
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      console.log('RUNTIME URL:', url);
+    });
+
+    return () => sub.remove();
+  }, []);
 
   if (loading) {
     return (

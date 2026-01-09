@@ -40,6 +40,7 @@ export interface CreateMeetingResponse {
   meetingId: string;
   password: string;
   deeplink: string;
+  zakToken?: string; // ZAK token for host authentication
   meeting: Meeting;
 }
 

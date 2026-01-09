@@ -28,6 +28,7 @@ interface MeetingData {
   password: string;
   deeplink: string;
   host: boolean;
+  zakToken?: string; // ZAK token for host authentication
 }
 
 export function CreateMeetingScreen() {
@@ -73,6 +74,7 @@ export function CreateMeetingScreen() {
           password: response.data.password,
           deeplink: response.data.deeplink,
           host: true,
+          zakToken: response.data.zakToken,
         });
         Alert.alert('Success', 'Meeting created successfully!');
       } else {
@@ -101,6 +103,7 @@ export function CreateMeetingScreen() {
         password: meetingData.password,
         displayName: user?.name,
         isHost: true,
+        zakToken: meetingData.zakToken,
       });
     }
   };
