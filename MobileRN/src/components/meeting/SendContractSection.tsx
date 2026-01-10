@@ -56,7 +56,11 @@ export function SendContractSection({
   };
 
   const handleKeyPress = (e: { nativeEvent: { key: string } }) => {
-    if (e.nativeEvent.key === 'Backspace' && inputValue === '' && clientEmails.length > 0) {
+    if (
+      e.nativeEvent.key === 'Backspace' &&
+      inputValue === '' &&
+      clientEmails.length > 0
+    ) {
       removeEmail(clientEmails[clientEmails.length - 1]);
     }
   };
@@ -89,11 +93,11 @@ export function SendContractSection({
           size={24}
           color={colors.primary}
         />
-        <Text style={styles.title}>Send Contract</Text>
+        <Text style={styles.title}>Send Meeting and Contract</Text>
       </View>
-      <Text style={styles.description}>
+      {/* <Text style={styles.description}>
         Send a contract to your clients via email
-      </Text>
+      </Text> */}
 
       <Text style={styles.inputLabel}>Contract URL (Optional)</Text>
       <TextInput
@@ -109,14 +113,19 @@ export function SendContractSection({
       />
 
       <Text style={styles.inputLabel}>Client Emails</Text>
-      <View style={[styles.emailContainer, isDisabled && styles.emailContainerDisabled]}>
+      <View
+        style={[
+          styles.emailContainer,
+          isDisabled && styles.emailContainerDisabled,
+        ]}
+      >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.chipsScrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {clientEmails.map((email) => (
+          {clientEmails.map(email => (
             <View key={email} style={styles.chip}>
               <Text style={styles.chipText}>{email}</Text>
               {!isDisabled && (
@@ -125,7 +134,11 @@ export function SendContractSection({
                   hitSlop={8}
                   style={styles.chipRemove}
                 >
-                  <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
+                  <Ionicons
+                    name="close-circle"
+                    size={18}
+                    color={colors.textSecondary}
+                  />
                 </Pressable>
               )}
             </View>
@@ -133,7 +146,11 @@ export function SendContractSection({
           {!isDisabled && (
             <TextInput
               style={styles.emailInput}
-              placeholder={clientEmails.length === 0 ? "Enter email addresses" : "Add more..."}
+              placeholder={
+                clientEmails.length === 0
+                  ? 'Enter email addresses'
+                  : 'Add more...'
+              }
               placeholderTextColor={colors.textSecondary}
               value={inputValue}
               onChangeText={handleChangeText}
@@ -159,11 +176,12 @@ export function SendContractSection({
         onPress={onSend}
         disabled={isSending || contractSent || clientEmails.length === 0}
       />
-      {contractSent && (
+      {/* {contractSent && (
         <Text style={styles.sentText}>
-          Contract sent to {clientEmails.length} recipient{clientEmails.length > 1 ? 's' : ''}
+          Contract sent to {clientEmails.length} recipient
+          {clientEmails.length > 1 ? 's' : ''}
         </Text>
-      )}
+      )} */}
     </View>
   );
 }
