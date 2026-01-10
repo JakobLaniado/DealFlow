@@ -14,34 +14,30 @@ export interface ZoomJWTResponse {
 }
 
 export interface CreateMeetingRequest {
-  userId: string;
+  hostUserId: string;
   title?: string;
+  type?: 'instant' | 'scheduled';
   startTime?: string;
   duration?: number;
-  settings?: {
-    waiting_room?: boolean;
-    join_before_host?: boolean;
-  };
 }
 
 export interface Meeting {
   id: string;
-  meeting_id: string;
-  password: string;
+  zoom_meeting_id: string;
+  host_user_id: string;
   title: string;
-  created_by: string;
+  password: string | null;
+  join_url: string | null;
   start_time: string | null;
   duration: number;
+  type: 'instant' | 'scheduled';
+  status: 'created' | 'started' | 'ended' | 'cancelled';
   created_at: string;
   updated_at: string;
 }
 
-export interface CreateMeetingResponse {
-  meetingId: string;
-  password: string;
-  deeplink: string;
-  zakToken?: string; // ZAK token for host authentication
-  meeting: Meeting;
+export interface MeetingWithZak extends Meeting {
+  zak_token: string | null;
 }
 
 export const backendService = {
@@ -50,7 +46,7 @@ export const backendService = {
    */
   async getZoomJWT(): Promise<BackendResponse<ZoomJWTResponse>> {
     try {
-      const response = await fetch(`${BACKEND_URL}/zoom/jwt`, {
+      const response = await fetch(`${BACKEND_URL}/meetings/jwt`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -82,9 +78,9 @@ export const backendService = {
    */
   async createMeeting(
     request: CreateMeetingRequest,
-  ): Promise<BackendResponse<CreateMeetingResponse>> {
+  ): Promise<BackendResponse<MeetingWithZak>> {
     try {
-      const response = await fetch(`${BACKEND_URL}/zoom/meetings`, {
+      const response = await fetch(`${BACKEND_URL}/meetings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,32 +109,131 @@ export const backendService = {
   },
 
   /**
-   * Get SDK signature for joining a meeting
+   * Get all meetings for a host user
    */
-  async getZoomSdkSignature(
-    meetingId: string,
-    role: 0 | 1,
-  ): Promise<BackendResponse<{ signature: string }>> {
+  async getMeetings(hostUserId: string): Promise<BackendResponse<Meeting[]>> {
     try {
-      const response = await fetch(`${BACKEND_URL}/zoom/sdk-signature`, {
-        method: 'POST',
+      const response = await fetch(
+        `${BACKEND_URL}/meetings?hostUserId=${hostUserId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || 'Failed to fetch meetings',
+        };
+      }
+
+      return {
+        success: true,
+        data: data.data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Network error',
+      };
+    }
+  },
+
+  /**
+   * Get a single meeting by ID
+   */
+  async getMeetingById(meetingId: string): Promise<BackendResponse<Meeting>> {
+    try {
+      const response = await fetch(`${BACKEND_URL}/meetings/${meetingId}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ meetingId, role }),
       });
       const data = await response.json();
 
       if (!response.ok) {
         return {
           success: false,
-          error: data.error || 'Failed to get SDK signature',
+          error: data.error || 'Failed to fetch meeting',
         };
       }
 
       return {
         success: true,
-        data: data,
+        data: data.data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Network error',
+      };
+    }
+  },
+
+  /**
+   * Get ZAK token for host to join as host
+   */
+  async getZakToken(): Promise<BackendResponse<{ zakToken: string }>> {
+    try {
+      const response = await fetch(`${BACKEND_URL}/meetings/zak`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || 'Failed to get ZAK token',
+        };
+      }
+
+      return {
+        success: true,
+        data: data.data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Network error',
+      };
+    }
+  },
+
+  /**
+   * Update meeting status
+   */
+  async updateMeetingStatus(
+    meetingId: string,
+    status: 'created' | 'started' | 'ended' | 'cancelled',
+  ): Promise<BackendResponse<Meeting>> {
+    try {
+      const response = await fetch(`${BACKEND_URL}/meetings/${meetingId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || 'Failed to update meeting',
+        };
+      }
+
+      return {
+        success: true,
+        data: data.data,
       };
     } catch (error: any) {
       return {

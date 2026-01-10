@@ -9,7 +9,7 @@ export const requireSellerRole = async (
   res: Response,
   next: NextFunction
 ) => {
-  const userId = req.body.userId;
+  const userId = req.body.hostUserId || req.body.userId;
 
   const { data: user, error } = await supabase
     .from("users")

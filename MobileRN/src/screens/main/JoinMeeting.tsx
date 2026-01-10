@@ -1,5 +1,6 @@
 import { Button } from '@/components/Button';
 import useAuth from '@/contexts/AuthContext';
+import { backendService } from '@/services/backend.service';
 import { colors, spacing, typography } from '@/utils/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useZoom } from '@zoom/meetingsdk-react-native';
@@ -30,11 +31,13 @@ export function JoinMeetingScreen() {
         password?: string;
         displayName?: string;
         isHost?: boolean;
-        zakToken?: string | null; // ZAK token for host authentication
+        zakToken?: string | null;
+        dbMeetingId?: string; // DB meeting ID for status updates
       }
     | undefined;
 
   const zakToken = params?.zakToken;
+  const dbMeetingId = params?.dbMeetingId;
 
   const [meetingId, setMeetingId] = useState(params?.meetingId || '');
   const [password, setPassword] = useState(params?.password || '');
@@ -205,6 +208,18 @@ export function JoinMeetingScreen() {
 
     setIsJoining(true);
 
+    // Update meeting status to 'started' when host starts
+    const updateMeetingStarted = async () => {
+      if (dbMeetingId && isHost) {
+        try {
+          await backendService.updateMeetingStatus(dbMeetingId, 'started');
+          console.log('[Meeting] Status updated to started');
+        } catch (err) {
+          console.warn('[Meeting] Failed to update status:', err);
+        }
+      }
+    };
+
     try {
       // If host with ZAK token, use startMeeting
       if (isHost && zakToken) {
@@ -221,6 +236,7 @@ export function JoinMeetingScreen() {
 
         const result = await zoom.startMeeting(startConfig);
         console.log('[Zoom] Start meeting result:', result);
+        await updateMeetingStarted();
         return;
       }
 

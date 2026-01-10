@@ -49,6 +49,7 @@ app-example
 *.md
 
 *.docx
+*.pdf
 
 .vscode/
 

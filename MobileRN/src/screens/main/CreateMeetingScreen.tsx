@@ -23,11 +23,12 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface MeetingData {
-  meetingId: string;
+  id: string;
+  zoomMeetingId: string;
   password: string;
-  deeplink: string;
+  joinUrl: string;
   host: boolean;
-  zakToken?: string; // ZAK token for host authentication
+  zakToken?: string;
 }
 
 export function CreateMeetingScreen() {
@@ -56,24 +57,22 @@ export function CreateMeetingScreen() {
     setIsCreating(true);
     try {
       const response = await backendService.createMeeting({
-        userId: user.id,
+        hostUserId: user.id,
         title:
           meetingTitle.trim() || `Meeting ${new Date().toLocaleDateString()}`,
+        type: meetingType,
         startTime: meetingType === 'scheduled' ? startTime : undefined,
-        duration: meetingType === 'scheduled' ? duration : undefined,
-        settings: {
-          waiting_room: waitingRoom,
-          join_before_host: joinBeforeHost,
-        },
+        duration: duration,
       });
 
       if (response.success && response.data) {
         setMeetingData({
-          meetingId: response.data.meetingId,
-          password: response.data.password,
-          deeplink: response.data.deeplink,
+          id: response.data.id,
+          zoomMeetingId: response.data.zoom_meeting_id,
+          password: response.data.password || '',
+          joinUrl: response.data.join_url || '',
           host: true,
-          zakToken: response.data.zakToken,
+          zakToken: response.data.zak_token || undefined,
         });
         Alert.alert('Success', 'Meeting created successfully!');
       } else {
@@ -98,11 +97,12 @@ export function CreateMeetingScreen() {
   const handleJoinMeeting = () => {
     if (meetingData) {
       (navigation.navigate as any)('JoinMeeting', {
-        meetingId: meetingData.meetingId,
+        meetingId: meetingData.zoomMeetingId,
         password: meetingData.password,
         displayName: user?.name,
         isHost: true,
         zakToken: meetingData.zakToken,
+        dbMeetingId: meetingData.id,
       });
     }
   };
@@ -208,8 +208,8 @@ export function CreateMeetingScreen() {
       <MeetingInfoCard
         icon="key-outline"
         label="Meeting ID"
-        value={meetingData!.meetingId}
-        onCopy={() => handleCopy(meetingData!.meetingId, 'Meeting ID')}
+        value={meetingData!.zoomMeetingId}
+        onCopy={() => handleCopy(meetingData!.zoomMeetingId, 'Meeting ID')}
       />
 
       <MeetingInfoCard
@@ -221,9 +221,9 @@ export function CreateMeetingScreen() {
 
       <MeetingInfoCard
         icon="link-outline"
-        label="Share Link"
-        value={meetingData!.deeplink}
-        onCopy={() => handleCopy(meetingData!.deeplink, 'Share Link')}
+        label="Join URL"
+        value={meetingData!.joinUrl}
+        onCopy={() => handleCopy(meetingData!.joinUrl, 'Join URL')}
         valueStyle="link"
       />
 

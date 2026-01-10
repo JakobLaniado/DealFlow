@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import "./config/db";
 import { contractRouter } from "./routes/contract.routes";
-import { zoomRouter } from "./routes/zoom.routes";
+import { meetingRouter } from "./routes/meeting.routes";
 
 dotenv.config();
 
@@ -13,7 +13,7 @@ app.use(express.json());
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-app.use("/zoom", zoomRouter);
+app.use("/meetings", meetingRouter);
 app.use("/contracts", contractRouter);
 
 const port = Number(process.env.PORT || 4000);
