@@ -252,4 +252,42 @@ export const backendService = {
       };
     }
   },
+
+  /**
+   * Send contract to client via email
+   */
+  async sendContract(params: {
+    clientEmail: string;
+    sellerUserId: string;
+    meetingId?: string;
+    contractUrl?: string;
+  }): Promise<BackendResponse<{ contractUrl: string }>> {
+    try {
+      const response = await fetch(`${BACKEND_URL}/contracts/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || 'Failed to send contract',
+        };
+      }
+
+      return {
+        success: true,
+        data: { contractUrl: data.contractUrl },
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Network error',
+      };
+    }
+  },
 };

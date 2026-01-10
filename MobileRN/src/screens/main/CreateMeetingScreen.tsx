@@ -58,8 +58,7 @@ export function CreateMeetingScreen() {
     try {
       const response = await backendService.createMeeting({
         hostUserId: user.id,
-        title:
-          meetingTitle.trim() || `Meeting ${new Date().toLocaleDateString()}`,
+        title: meetingTitle.trim() || `Contract Call`,
         type: meetingType,
         startTime: meetingType === 'scheduled' ? startTime : undefined,
         duration: duration,

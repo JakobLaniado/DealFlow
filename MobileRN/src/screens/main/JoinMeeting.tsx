@@ -55,6 +55,12 @@ export function JoinMeetingScreen() {
   >(null);
   const [tempValue, setTempValue] = useState('');
 
+  // Contract sending state (seller only)
+  const [clientEmail, setClientEmail] = useState('');
+  const [contractUrl, setContractUrl] = useState('');
+  const [isSendingContract, setIsSendingContract] = useState(false);
+  const [contractSent, setContractSent] = useState(false);
+
   useEffect(() => {
     let alive = true;
     let timer: NodeJS.Timeout;
@@ -189,6 +195,51 @@ export function JoinMeetingScreen() {
     } catch (err) {
       console.warn('Permission request error:', err);
       return false;
+    }
+  };
+
+  const handleSendContract = async () => {
+    if (!clientEmail.trim()) {
+      Alert.alert('Error', 'Please enter the client email address');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(clientEmail.trim())) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    if (!user?.id) {
+      Alert.alert('Error', 'User not authenticated');
+      return;
+    }
+
+    setIsSendingContract(true);
+
+    try {
+      const response = await backendService.sendContract({
+        clientEmail: clientEmail.trim(),
+        sellerUserId: user.id,
+        meetingId: dbMeetingId,
+        contractUrl: contractUrl.trim() || undefined,
+      });
+
+      if (response.success) {
+        setContractSent(true);
+        Alert.alert(
+          'Contract Sent!',
+          `Contract has been sent to ${clientEmail}`,
+          [{ text: 'OK' }],
+        );
+      } else {
+        Alert.alert('Error', response.error || 'Failed to send contract');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to send contract');
+    } finally {
+      setIsSendingContract(false);
     }
   };
 
@@ -346,8 +397,68 @@ export function JoinMeetingScreen() {
           {!sdkReady && (
             <View style={styles.warningSection}>
               <Text style={styles.warningText}>
-                ⚠️ Waiting for Zoom SDK to initialize...
+                Waiting for Zoom SDK to initialize...
               </Text>
+            </View>
+          )}
+
+          {/* Send Contract Section - Seller Only */}
+          {isHost && user?.role === 'seller' && (
+            <View style={styles.contractSection}>
+              <View style={styles.contractHeader}>
+                <Ionicons
+                  name="document-text-outline"
+                  size={24}
+                  color={colors.primary}
+                />
+                <Text style={styles.contractTitle}>Send Contract</Text>
+              </View>
+              <Text style={styles.contractDescription}>
+                Send a contract to your client via email
+              </Text>
+              <TextInput
+                style={styles.contractInput}
+                placeholder="Contract URL (optional - uses default if empty)"
+                placeholderTextColor={colors.textSecondary}
+                value={contractUrl}
+                onChangeText={setContractUrl}
+                keyboardType="url"
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!isSendingContract && !contractSent}
+              />
+              <TextInput
+                style={styles.contractInput}
+                placeholder="Client email address"
+                placeholderTextColor={colors.textSecondary}
+                value={clientEmail}
+                onChangeText={setClientEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!isSendingContract && !contractSent}
+              />
+              <Button
+                title={
+                  contractSent
+                    ? 'CONTRACT SENT'
+                    : isSendingContract
+                    ? 'SENDING...'
+                    : 'SEND CONTRACT'
+                }
+                variant={contractSent ? 'secondary' : 'outline'}
+                size="medium"
+                fullWidth
+                onPress={handleSendContract}
+                disabled={
+                  isSendingContract || contractSent || !clientEmail.trim()
+                }
+              />
+              {contractSent && (
+                <Text style={styles.contractSentText}>
+                  Contract sent to {clientEmail}
+                </Text>
+              )}
             </View>
           )}
 
@@ -513,7 +624,51 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     marginBottom: spacing.xl,
   },
-  // Modal styles
+
+  contractSection: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  contractHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  contractTitle: {
+    ...typography.h3,
+    color: colors.primary,
+    marginLeft: spacing.sm,
+  },
+  contractDescription: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  contractInput: {
+    ...typography.body,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: spacing.sm,
+    marginBottom: spacing.md,
+    backgroundColor: colors.background,
+  },
+  contractSentText: {
+    ...typography.bodySmall,
+    color: colors.secondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

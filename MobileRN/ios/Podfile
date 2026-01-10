@@ -22,6 +22,9 @@ target 'MobileRN' do
   # Explicitly add RNWorklets (required by react-native-reanimated)
   pod 'RNWorklets', :path => '../node_modules/react-native-worklets'
 
+  # Firebase - managed by @react-native-firebase packages
+  pod 'GoogleUtilities', :modular_headers => true
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
