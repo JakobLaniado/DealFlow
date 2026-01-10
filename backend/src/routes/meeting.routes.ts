@@ -95,9 +95,11 @@ meetingRouter.get("/", async (req, res) => {
 
   try {
     const meetings = await getMeetingsByHost(parsed.data.hostUserId);
+    const zakToken = await getZakToken();
     res.json({
       success: true,
       data: meetings,
+      zakToken,
     });
   } catch (err: any) {
     res.status(500).json({ error: err?.message || "Failed to fetch meetings" });

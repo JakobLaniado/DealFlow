@@ -116,9 +116,17 @@ export function JoinMeetingScreen() {
   };
 
   const handleSaveEdit = () => {
-    if (editingField === 'meetingId') setMeetingId(tempValue);
-    else if (editingField === 'password') setPassword(tempValue);
-    else if (editingField === 'displayName') setDisplayName(tempValue);
+    if (editingField === 'meetingId') {
+      setMeetingId(tempValue);
+      // If meeting ID changes, user is no longer host of the original meeting
+      if (tempValue !== params?.meetingId) {
+        setIsHost(false);
+      }
+    } else if (editingField === 'password') {
+      setPassword(tempValue);
+    } else if (editingField === 'displayName') {
+      setDisplayName(tempValue);
+    }
 
     setIsModalVisible(false);
     setEditingField(null);

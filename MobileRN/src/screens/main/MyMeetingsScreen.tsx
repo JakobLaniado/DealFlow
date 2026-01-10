@@ -6,6 +6,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -104,6 +105,7 @@ export function MyMeetingsScreen() {
   const navigation = useNavigation();
   const { user } = useAuth();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [zakToken, setZakToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +118,8 @@ export function MyMeetingsScreen() {
       const response = await backendService.getMeetings(user.id);
 
       if (response.success && response.data) {
-        setMeetings(response.data);
+        setMeetings(response.data.meetings);
+        setZakToken(response.data.zakToken || null);
       } else {
         setError(response.error || 'Failed to fetch meetings');
       }
@@ -145,10 +148,29 @@ export function MyMeetingsScreen() {
     fetchMeetings();
   };
 
-  const handleJoinMeeting = async (meeting: Meeting) => {
-    // Fetch ZAK token for host
-    const zakResponse = await backendService.getZakToken();
-    const zakToken = zakResponse.success ? zakResponse.data?.zakToken : undefined;
+  const handleJoinMeeting = (meeting: Meeting) => {
+    if (!zakToken) {
+      Alert.alert(
+        'Host Token Unavailable',
+        'Could not retrieve host credentials. You will join as a participant instead.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Join as Participant',
+            onPress: () => {
+              (navigation.navigate as any)('JoinMeeting', {
+                meetingId: meeting.zoom_meeting_id,
+                password: meeting.password,
+                displayName: user?.name,
+                isHost: false,
+                dbMeetingId: meeting.id,
+              });
+            },
+          },
+        ],
+      );
+      return;
+    }
 
     (navigation.navigate as any)('JoinMeeting', {
       meetingId: meeting.zoom_meeting_id,

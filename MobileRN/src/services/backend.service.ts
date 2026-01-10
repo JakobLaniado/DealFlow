@@ -40,6 +40,11 @@ export interface MeetingWithZak extends Meeting {
   zak_token: string | null;
 }
 
+export interface MeetingsResponse {
+  meetings: Meeting[];
+  zakToken?: string;
+}
+
 export const backendService = {
   /**
    * Get Zoom SDK JWT token for initializing the Zoom SDK
@@ -109,9 +114,11 @@ export const backendService = {
   },
 
   /**
-   * Get all meetings for a host user
+   * Get all meetings for a host user (includes ZAK token for rejoining as host)
    */
-  async getMeetings(hostUserId: string): Promise<BackendResponse<Meeting[]>> {
+  async getMeetings(
+    hostUserId: string,
+  ): Promise<BackendResponse<MeetingsResponse>> {
     try {
       const response = await fetch(
         `${BACKEND_URL}/meetings?hostUserId=${hostUserId}`,
@@ -133,7 +140,10 @@ export const backendService = {
 
       return {
         success: true,
-        data: data.data,
+        data: {
+          meetings: data.data,
+          zakToken: data.zakToken,
+        },
       };
     } catch (error: any) {
       return {
