@@ -49,9 +49,6 @@ app-example
 # cursor rules
 .cursorrules
 
-# markdown files
-*.md
-
 *.docx
 *.pdf
 
