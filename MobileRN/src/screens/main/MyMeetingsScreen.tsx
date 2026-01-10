@@ -1,7 +1,8 @@
 import { Button } from '@/components/Button';
 import useAuth from '@/contexts/AuthContext';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { backendService, Meeting } from '@/services/backend.service';
-import { borderRadius, colors, spacing, typography } from '@/utils/theme';
+import { borderRadius, spacing, ThemeColors } from '@/utils/theme';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -27,55 +28,68 @@ function formatDate(dateString: string): string {
   });
 }
 
-function getStatusColor(status: Meeting['status']): string {
+function getStatusColor(status: Meeting['status'], colors: ThemeColors): string {
   switch (status) {
     case 'created':
       return colors.primary;
     case 'started':
       return colors.secondary;
     case 'ended':
-      return colors.textSecondary;
+      return colors.textMuted;
     case 'cancelled':
-      return '#E53935';
+      return colors.error;
     default:
-      return colors.textSecondary;
+      return colors.textMuted;
   }
 }
 
 function MeetingCard({
   meeting,
   onJoin,
+  colors,
 }: {
   meeting: Meeting;
   onJoin: (meeting: Meeting) => void;
+  colors: ThemeColors;
 }) {
   const canJoin = meeting.status === 'created' || meeting.status === 'started';
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
+    >
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle} numberOfLines={1}>
+        <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
           {meeting.title}
         </Text>
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: getStatusColor(meeting.status) },
+            { backgroundColor: getStatusColor(meeting.status, colors) },
           ]}
         >
-          <Text style={styles.statusText}>{meeting.status}</Text>
+          <Text style={[styles.statusText, { color: colors.white }]}>
+            {meeting.status}
+          </Text>
         </View>
       </View>
 
       <View style={styles.cardDetails}>
         <View style={styles.detailRow}>
           <Ionicons name="key-outline" size={16} color={colors.textSecondary} />
-          <Text style={styles.detailText}>ID: {meeting.zoom_meeting_id}</Text>
+          <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+            ID: {meeting.zoom_meeting_id}
+          </Text>
         </View>
 
         <View style={styles.detailRow}>
           <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
-          <Text style={styles.detailText}>{formatDate(meeting.created_at)}</Text>
+          <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+            {formatDate(meeting.created_at)}
+          </Text>
         </View>
 
         <View style={styles.detailRow}>
@@ -84,17 +98,21 @@ function MeetingCard({
             size={16}
             color={colors.textSecondary}
           />
-          <Text style={styles.detailText}>{meeting.duration} min</Text>
+          <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+            {meeting.duration} min
+          </Text>
         </View>
       </View>
 
       {canJoin && (
         <TouchableOpacity
-          style={styles.joinButton}
+          style={[styles.joinButton, { backgroundColor: colors.primary }]}
           onPress={() => onJoin(meeting)}
         >
           <Ionicons name="videocam" size={18} color={colors.white} />
-          <Text style={styles.joinButtonText}>Join Meeting</Text>
+          <Text style={[styles.joinButtonText, { color: colors.white }]}>
+            Join Meeting
+          </Text>
         </TouchableOpacity>
       )}
     </View>
@@ -104,6 +122,7 @@ function MeetingCard({
 export function MyMeetingsScreen() {
   const navigation = useNavigation();
   const { user } = useAuth();
+  const { colors } = useThemedStyles();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [zakToken, setZakToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -131,16 +150,14 @@ export function MyMeetingsScreen() {
     }
   }, [user?.id]);
 
-  // Fetch on mount
   useEffect(() => {
     fetchMeetings();
   }, [fetchMeetings]);
 
-  // Refetch when screen comes into focus (e.g., after leaving a meeting)
   useFocusEffect(
     useCallback(() => {
       fetchMeetings();
-    }, [fetchMeetings])
+    }, [fetchMeetings]),
   );
 
   const handleRefresh = () => {
@@ -188,18 +205,24 @@ export function MyMeetingsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
+      <View
+        style={[styles.centerContainer, { backgroundColor: colors.background }]}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading meetings...</Text>
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+          Loading meetings...
+        </Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centerContainer}>
-        <Ionicons name="alert-circle-outline" size={48} color="#E53935" />
-        <Text style={styles.errorText}>{error}</Text>
+      <View
+        style={[styles.centerContainer, { backgroundColor: colors.background }]}
+      >
+        <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
         <Button
           title="Retry"
           variant="primary"
@@ -211,12 +234,12 @@ export function MyMeetingsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={meetings}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <MeetingCard meeting={item} onJoin={handleJoinMeeting} />
+          <MeetingCard meeting={item} onJoin={handleJoinMeeting} colors={colors} />
         )}
         contentContainerStyle={styles.listContent}
         refreshControl={
@@ -224,6 +247,7 @@ export function MyMeetingsScreen() {
             refreshing={refreshing}
             onRefresh={handleRefresh}
             colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
         ListEmptyComponent={
@@ -233,8 +257,10 @@ export function MyMeetingsScreen() {
               size={64}
               color={colors.textSecondary}
             />
-            <Text style={styles.emptyTitle}>No Meetings Yet</Text>
-            <Text style={styles.emptySubtitle}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              No Meetings Yet
+            </Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
               Create your first meeting to get started
             </Text>
             <Button
@@ -254,23 +280,19 @@ export function MyMeetingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   centerContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.lg,
-    backgroundColor: colors.background,
   },
   loadingText: {
-    ...typography.body,
-    color: colors.textSecondary,
+    fontSize: 16,
     marginTop: spacing.md,
   },
   errorText: {
-    ...typography.body,
-    color: '#E53935',
+    fontSize: 16,
     textAlign: 'center',
     marginVertical: spacing.md,
   },
@@ -279,15 +301,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   card: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -296,7 +313,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   cardTitle: {
-    ...typography.h3,
+    fontSize: 20,
+    fontWeight: '600',
     flex: 1,
     marginRight: spacing.sm,
   },
@@ -306,8 +324,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.sm,
   },
   statusText: {
-    ...typography.bodySmall,
-    color: colors.white,
+    fontSize: 14,
     fontWeight: '600',
     textTransform: 'capitalize',
   },
@@ -320,19 +337,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   detailText: {
-    ...typography.bodySmall,
+    fontSize: 14,
     marginLeft: spacing.sm,
   },
   joinButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.secondary,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.sm,
   },
   joinButtonText: {
-    ...typography.button,
+    fontSize: 16,
+    fontWeight: '600',
     marginLeft: spacing.sm,
   },
   emptyContainer: {
@@ -342,13 +359,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
   },
   emptyTitle: {
-    ...typography.h2,
+    fontSize: 24,
+    fontWeight: 'bold',
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
   emptySubtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
+    fontSize: 16,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },

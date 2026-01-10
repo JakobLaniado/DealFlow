@@ -1,4 +1,5 @@
-import { colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { spacing } from '@/utils/theme';
 import React from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 
@@ -15,12 +16,21 @@ export function MeetingSettings({
   joinBeforeHost,
   onJoinBeforeHostChange,
 }: MeetingSettingsProps) {
+  const { colors } = useThemedStyles();
+
   return (
-    <View style={styles.container}>
-      <View style={styles.settingRow}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
+    >
+      <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
         <View style={styles.settingInfo}>
-          <Text style={styles.settingLabel}>Waiting Room</Text>
-          <Text style={styles.settingDescription}>
+          <Text style={[styles.settingLabel, { color: colors.text }]}>
+            Waiting Room
+          </Text>
+          <Text style={[styles.settingDescription, { color: colors.textSecondary }]}>
             Participants wait until host admits them
           </Text>
         </View>
@@ -32,10 +42,12 @@ export function MeetingSettings({
         />
       </View>
 
-      <View style={styles.settingRow}>
+      <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
         <View style={styles.settingInfo}>
-          <Text style={styles.settingLabel}>Join Before Host</Text>
-          <Text style={styles.settingDescription}>
+          <Text style={[styles.settingLabel, { color: colors.text }]}>
+            Join Before Host
+          </Text>
+          <Text style={[styles.settingDescription, { color: colors.textSecondary }]}>
             Allow participants to join before you
           </Text>
         </View>
@@ -52,11 +64,9 @@ export function MeetingSettings({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
     borderRadius: 8,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   settingRow: {
     flexDirection: 'row',
@@ -64,19 +74,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   settingInfo: {
     flex: 1,
     marginRight: spacing.md,
   },
   settingLabel: {
-    ...typography.body,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: spacing.xs,
   },
   settingDescription: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontSize: 14,
   },
 });

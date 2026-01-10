@@ -1,7 +1,8 @@
 import { Button } from '@/components/Button';
 import { DealFlowLogo } from '@/components/DealFlowLogo';
 import useAuth from '@/contexts/AuthContext';
-import { colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { spacing } from '@/utils/theme';
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -9,6 +10,7 @@ import { StyleSheet, Text, View } from 'react-native';
 export function HomeScreen() {
   const { user } = useAuth();
   const navigation = useNavigation();
+  const { colors } = useThemedStyles();
   const isSeller = user?.role === 'seller';
 
   const handleCreateMeeting = () => {
@@ -20,7 +22,7 @@ export function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
         <DealFlowLogo size={400} style={styles.logo} />
         {isSeller ? (
@@ -41,7 +43,7 @@ export function HomeScreen() {
               onPress={handleCreateMeeting}
               style={styles.createButton}
             />
-            <Text style={styles.welcomeText}>
+            <Text style={[styles.welcomeText, { color: colors.textLight }]}>
               Welcome back, {user?.name}! Create a meeting and share the link
               with your client.
             </Text>
@@ -56,7 +58,7 @@ export function HomeScreen() {
               onPress={handleJoinMeeting}
               style={styles.joinButton}
             />
-            <Text style={styles.welcomeText}>
+            <Text style={[styles.welcomeText, { color: colors.textLight }]}>
               Hey, {user?.name}! You can connect to the meet by link or by id
               and password
             </Text>
@@ -70,7 +72,6 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -85,10 +86,8 @@ const styles = StyleSheet.create({
     maxWidth: 300,
   },
   welcomeText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    fontWeight: 'bold',
-    fontSize: 20,
+    fontWeight: '600',
+    fontSize: 18,
     textAlign: 'center',
     marginTop: spacing.lg,
   },

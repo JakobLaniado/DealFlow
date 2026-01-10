@@ -1,4 +1,5 @@
-import { borderRadius, colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { borderRadius, spacing } from '@/utils/theme';
 import React from 'react';
 import {
   Modal,
@@ -42,6 +43,7 @@ export function EditFieldModal({
   onSave,
   onCancel,
 }: EditFieldModalProps) {
+  const { colors } = useThemedStyles();
   const config = field ? FIELD_CONFIG[field] : null;
 
   return (
@@ -52,24 +54,36 @@ export function EditFieldModal({
       onRequestClose={onCancel}
     >
       <TouchableOpacity
-        style={styles.overlay}
+        style={[styles.overlay, { backgroundColor: colors.overlay }]}
         activeOpacity={1}
         onPress={onCancel}
       >
         <TouchableOpacity
-          style={styles.content}
+          style={[
+            styles.content,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
           activeOpacity={1}
           onPress={e => e.stopPropagation()}
         >
-          <View style={styles.header}>
-            <Text style={styles.title}>Edit {config?.label}</Text>
+          <View style={[styles.header, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.title, { color: colors.primary }]}>
+              Edit {config?.label}
+            </Text>
             <TouchableOpacity onPress={onCancel}>
               <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
           <View style={styles.body}>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border,
+                  backgroundColor: colors.backgroundSecondary,
+                  color: colors.text,
+                },
+              ]}
               value={value}
               onChangeText={onChangeText}
               placeholder={`Enter ${config?.label.toLowerCase()}`}
@@ -79,18 +93,22 @@ export function EditFieldModal({
               secureTextEntry={config?.secure}
             />
           </View>
-          <View style={styles.footer}>
+          <View style={[styles.footer, { borderTopColor: colors.border }]}>
             <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
+              style={[styles.button, { backgroundColor: colors.surfaceLight }]}
               onPress={onCancel}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={[styles.cancelButtonText, { color: colors.text }]}>
+                Cancel
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, styles.saveButton]}
+              style={[styles.button, { backgroundColor: colors.primary }]}
               onPress={onSave}
             >
-              <Text style={styles.saveButtonText}>Save</Text>
+              <Text style={[styles.saveButtonText, { color: colors.white }]}>
+                Save
+              </Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -102,21 +120,15 @@ export function EditFieldModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xs,
   },
   content: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     width: '100%',
     maxWidth: 400,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    borderWidth: 1,
   },
   header: {
     flexDirection: 'row',
@@ -124,23 +136,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.background,
   },
   title: {
-    ...typography.h2,
-    color: colors.primary,
+    fontSize: 20,
+    fontWeight: '600',
   },
   body: {
     padding: spacing.md,
   },
   input: {
-    ...typography.body,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: borderRadius.sm,
     padding: spacing.sm,
     minHeight: 44,
-    backgroundColor: colors.background,
+    fontSize: 16,
   },
   footer: {
     flexDirection: 'row',
@@ -148,7 +157,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.background,
   },
   button: {
     paddingVertical: spacing.sm,
@@ -157,18 +165,12 @@ const styles = StyleSheet.create({
     minWidth: 80,
     alignItems: 'center',
   },
-  cancelButton: {
-    backgroundColor: colors.background,
-  },
   cancelButtonText: {
-    ...typography.button,
-    color: colors.text,
-  },
-  saveButton: {
-    backgroundColor: colors.primary,
+    fontSize: 16,
+    fontWeight: '600',
   },
   saveButtonText: {
-    ...typography.button,
-    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

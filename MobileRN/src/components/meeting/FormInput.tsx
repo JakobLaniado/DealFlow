@@ -1,4 +1,5 @@
-import { colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { spacing } from '@/utils/theme';
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -17,17 +18,30 @@ export function FormInput({
   placeholder,
   helperText,
 }: FormInputProps) {
+  const { colors } = useThemedStyles();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.backgroundSecondary,
+            borderColor: colors.border,
+            color: colors.text,
+          },
+        ]}
         placeholder={placeholder}
         placeholderTextColor={colors.textSecondary}
         value={value}
         onChangeText={onChangeText}
       />
-      {helperText && <Text style={styles.helperText}>{helperText}</Text>}
+      {helperText && (
+        <Text style={[styles.helperText, { color: colors.textSecondary }]}>
+          {helperText}
+        </Text>
+      )}
     </View>
   );
 }
@@ -37,23 +51,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   label: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontSize: 14,
     marginBottom: spacing.xs,
     fontWeight: '600',
   },
   input: {
-    backgroundColor: colors.white,
     borderRadius: 8,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
-    ...typography.body,
-    color: colors.text,
+    fontSize: 16,
   },
   helperText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontSize: 14,
     marginTop: spacing.xs,
     fontStyle: 'italic',
   },

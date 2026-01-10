@@ -1,4 +1,5 @@
-import { colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { spacing } from '@/utils/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -18,12 +19,20 @@ export function CollapsibleSection({
   onToggle,
   children,
 }: CollapsibleSectionProps) {
+  const { colors } = useThemedStyles();
+
   return (
     <>
-      <TouchableOpacity style={styles.toggle} onPress={onToggle}>
+      <TouchableOpacity
+        style={[
+          styles.toggle,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+        onPress={onToggle}
+      >
         <View style={styles.toggleLeft}>
           <Ionicons name={icon} size={20} color={colors.primary} />
-          <Text style={styles.toggleText}>{title}</Text>
+          <Text style={[styles.toggleText, { color: colors.text }]}>{title}</Text>
         </View>
         <Ionicons
           name={isExpanded ? 'chevron-up' : 'chevron-down'}
@@ -44,10 +53,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
-    backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.border,
     marginBottom: spacing.md,
   },
   toggleLeft: {
@@ -56,8 +63,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   toggleText: {
-    ...typography.body,
+    fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
   },
 });

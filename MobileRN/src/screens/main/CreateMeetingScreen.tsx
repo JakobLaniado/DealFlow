@@ -8,8 +8,9 @@ import {
   MeetingTypeSelector,
 } from '@/components/meeting';
 import useAuth from '@/contexts/AuthContext';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { backendService } from '@/services/backend.service';
-import { colors, spacing, typography } from '@/utils/theme';
+import { spacing } from '@/utils/theme';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
@@ -34,6 +35,7 @@ interface MeetingData {
 export function CreateMeetingScreen() {
   const navigation = useNavigation();
   const { user } = useAuth();
+  const { colors } = useThemedStyles();
 
   // State
   const [isCreating, setIsCreating] = useState(false);
@@ -86,7 +88,6 @@ export function CreateMeetingScreen() {
 
   const handleCopy = async (text: string, label: string) => {
     try {
-      // await Clipboard.setString(text);
       Alert.alert('Copied', `${label} copied to clipboard`);
     } catch (error) {
       Alert.alert('Error', 'Failed to copy');
@@ -127,14 +128,18 @@ export function CreateMeetingScreen() {
     <>
       <View style={styles.headerSection}>
         <Ionicons name="videocam" size={48} color={colors.primary} />
-        <Text style={styles.title}>Create New Meeting</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: colors.text }]}>
+          Create New Meeting
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Set up your meeting preferences and share with clients
         </Text>
       </View>
 
       <View style={styles.formSection}>
-        <Text style={styles.sectionTitle}>Meeting Details</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          Meeting Details
+        </Text>
 
         <MeetingTypeSelector value={meetingType} onChange={setMeetingType} />
 
@@ -199,8 +204,10 @@ export function CreateMeetingScreen() {
         <Ionicons name="checkmark-circle" size={64} color={colors.primary} />
       </View>
 
-      <Text style={styles.successText}>Meeting Created!</Text>
-      <Text style={styles.successSubtext}>
+      <Text style={[styles.successText, { color: colors.primary }]}>
+        Meeting Created!
+      </Text>
+      <Text style={[styles.successSubtext, { color: colors.textSecondary }]}>
         Share the details below with your client
       </Text>
 
@@ -256,7 +263,7 @@ export function CreateMeetingScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -270,7 +277,6 @@ export function CreateMeetingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -284,14 +290,14 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
   },
   title: {
-    ...typography.h1,
+    fontSize: 32,
+    fontWeight: 'bold',
     marginTop: spacing.md,
     marginBottom: spacing.sm,
     textAlign: 'center',
   },
   subtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
+    fontSize: 16,
     textAlign: 'center',
     paddingHorizontal: spacing.md,
   },
@@ -299,9 +305,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   sectionTitle: {
-    ...typography.h3,
-    marginBottom: spacing.md,
+    fontSize: 20,
     fontWeight: '600',
+    marginBottom: spacing.md,
   },
   createSection: {
     marginTop: spacing.md,
@@ -317,15 +323,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   successText: {
-    ...typography.h2,
+    fontSize: 24,
+    fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: spacing.xs,
-    color: colors.primary,
   },
   successSubtext: {
-    ...typography.body,
+    fontSize: 16,
     textAlign: 'center',
-    color: colors.textSecondary,
     marginBottom: spacing.xl,
   },
   shareButton: {

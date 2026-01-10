@@ -1,4 +1,5 @@
-import { colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { spacing } from '@/utils/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -11,12 +12,21 @@ interface MeetingTypeSelectorProps {
 }
 
 export function MeetingTypeSelector({ value, onChange }: MeetingTypeSelectorProps) {
+  const { colors } = useThemedStyles();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Meeting Type</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>Meeting Type</Text>
       <View style={styles.selector}>
         <TouchableOpacity
-          style={[styles.button, value === 'instant' && styles.buttonActive]}
+          style={[
+            styles.button,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            value === 'instant' && {
+              backgroundColor: colors.primary,
+              borderColor: colors.primary,
+            },
+          ]}
           onPress={() => onChange('instant')}
         >
           <Ionicons
@@ -24,13 +34,26 @@ export function MeetingTypeSelector({ value, onChange }: MeetingTypeSelectorProp
             size={20}
             color={value === 'instant' ? colors.white : colors.textSecondary}
           />
-          <Text style={[styles.buttonText, value === 'instant' && styles.buttonTextActive]}>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: colors.textSecondary },
+              value === 'instant' && { color: colors.white },
+            ]}
+          >
             Instant
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, value === 'scheduled' && styles.buttonActive]}
+          style={[
+            styles.button,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            value === 'scheduled' && {
+              backgroundColor: colors.primary,
+              borderColor: colors.primary,
+            },
+          ]}
           onPress={() => onChange('scheduled')}
         >
           <Ionicons
@@ -38,7 +61,13 @@ export function MeetingTypeSelector({ value, onChange }: MeetingTypeSelectorProp
             size={20}
             color={value === 'scheduled' ? colors.white : colors.textSecondary}
           />
-          <Text style={[styles.buttonText, value === 'scheduled' && styles.buttonTextActive]}>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: colors.textSecondary },
+              value === 'scheduled' && { color: colors.white },
+            ]}
+          >
             Scheduled
           </Text>
         </TouchableOpacity>
@@ -52,8 +81,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   label: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontSize: 14,
     marginBottom: spacing.xs,
     fontWeight: '600',
   },
@@ -69,21 +97,11 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
-    backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: colors.border,
-  },
-  buttonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
   },
   buttonText: {
-    ...typography.body,
+    fontSize: 16,
     fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  buttonTextActive: {
-    color: colors.white,
   },
 });

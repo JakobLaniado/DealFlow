@@ -1,5 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { RegisterCredentials } from '@/types/auth';
+import { borderRadius, spacing } from '@/utils/theme';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
@@ -15,6 +17,7 @@ import {
 export function RegisterScreen() {
   const { register } = useAuth();
   const navigation = useNavigation();
+  const { colors } = useThemedStyles();
   const [credentials, setCredentials] = useState<RegisterCredentials>({
     name: '',
     email: '',
@@ -58,15 +61,32 @@ export function RegisterScreen() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Sign up to get started</Text>
+  const inputStyle = [
+    styles.input,
+    {
+      backgroundColor: colors.backgroundSecondary,
+      borderColor: colors.border,
+      color: colors.text,
+    },
+  ];
 
-      <View style={styles.form}>
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Create Account</Text>
+      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+        Sign up to get started
+      </Text>
+
+      <View
+        style={[
+          styles.form,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
         <TextInput
-          style={styles.input}
+          style={inputStyle}
           placeholder="Name"
+          placeholderTextColor={colors.textMuted}
           value={credentials.name}
           onChangeText={text => setCredentials({ ...credentials, name: text })}
           autoCapitalize="words"
@@ -74,8 +94,9 @@ export function RegisterScreen() {
         />
 
         <TextInput
-          style={styles.input}
+          style={inputStyle}
           placeholder="Email"
+          placeholderTextColor={colors.textMuted}
           value={credentials.email}
           onChangeText={text => setCredentials({ ...credentials, email: text })}
           keyboardType="email-address"
@@ -84,8 +105,9 @@ export function RegisterScreen() {
         />
 
         <TextInput
-          style={styles.input}
+          style={inputStyle}
           placeholder="Password"
+          placeholderTextColor={colors.textMuted}
           value={credentials.password}
           onChangeText={text =>
             setCredentials({ ...credentials, password: text })
@@ -95,8 +117,9 @@ export function RegisterScreen() {
         />
 
         <TextInput
-          style={styles.input}
+          style={inputStyle}
           placeholder="Confirm Password"
+          placeholderTextColor={colors.textMuted}
           value={credentials.confirmPassword}
           onChangeText={text =>
             setCredentials({ ...credentials, confirmPassword: text })
@@ -106,14 +129,20 @@ export function RegisterScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            { backgroundColor: colors.primary },
+            loading && { backgroundColor: colors.surfaceLight, opacity: 0.6 },
+          ]}
           onPress={handleRegister}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.buttonText}>Register</Text>
+            <Text style={[styles.buttonText, { color: colors.white }]}>
+              Register
+            </Text>
           )}
         </TouchableOpacity>
 
@@ -121,7 +150,9 @@ export function RegisterScreen() {
           style={styles.linkButton}
           onPress={() => navigation.navigate('Login' as never)}
         >
-          <Text style={styles.linkText}>Already have an account? Login</Text>
+          <Text style={[styles.linkText, { color: colors.primaryLight }]}>
+            Already have an account? Login
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -131,63 +162,47 @@ export function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing.lg,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 8,
-    color: '#333',
+    marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 32,
-    color: '#666',
+    marginBottom: spacing.xl,
   },
   form: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
+    borderRadius: borderRadius.sm,
+    padding: spacing.md,
+    marginBottom: spacing.md,
     fontSize: 16,
-    backgroundColor: '#fff',
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    padding: spacing.md,
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
+    marginTop: spacing.sm,
   },
   buttonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
   linkButton: {
-    marginTop: 20,
+    marginTop: spacing.lg,
     alignItems: 'center',
   },
   linkText: {
-    color: '#007AFF',
     fontSize: 14,
   },
 });

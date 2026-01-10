@@ -1,5 +1,6 @@
 import { ZoomProviderWrapper } from '@/components/ZoomProviderWrapper';
 import useAuth from '@/contexts/AuthContext';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { CreateMeetingScreen } from '@/screens/main/CreateMeetingScreen';
 import { HomeScreen } from '@/screens/main/HomeScreen';
 import { JoinMeetingScreen } from '@/screens/main/JoinMeeting';
@@ -39,14 +40,19 @@ const MeetingsStack = () => (
 
 export const MainNavigator = () => {
   const { user } = useAuth();
+  const { colors } = useThemedStyles();
   const isSeller = user?.role === 'seller';
 
   return (
     <ZoomProviderWrapper>
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: '#007AFF',
-          tabBarInactiveTintColor: 'gray',
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textMuted,
+          tabBarStyle: {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+          },
           headerShown: false,
         }}
       >

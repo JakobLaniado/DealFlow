@@ -1,4 +1,5 @@
-import { borderRadius, colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { borderRadius, spacing } from '@/utils/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -14,16 +15,26 @@ export function EditableField({
   displayValue,
   onEdit,
 }: EditableFieldProps) {
+  const { colors } = useThemedStyles();
+
   return (
     <View style={styles.container}>
       <View style={styles.labelRow}>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
         <TouchableOpacity onPress={onEdit} style={styles.editButton}>
           <Ionicons name="pencil" size={20} color={colors.primary} />
         </TouchableOpacity>
       </View>
-      <View style={styles.valueContainer}>
-        <Text style={styles.value}>{displayValue}</Text>
+      <View
+        style={[
+          styles.valueContainer,
+          {
+            backgroundColor: colors.backgroundSecondary,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.value, { color: colors.text }]}>{displayValue}</Text>
       </View>
     </View>
   );
@@ -40,24 +51,20 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   label: {
-    ...typography.bodySmall,
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.textSecondary,
   },
   editButton: {
     padding: spacing.xs,
   },
   valueContainer: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.sm,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.xs,
     minHeight: 30,
     justifyContent: 'center',
   },
   value: {
-    ...typography.body,
-    color: colors.text,
+    fontSize: 16,
   },
 });

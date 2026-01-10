@@ -1,4 +1,5 @@
-import { colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { spacing } from '@/utils/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -8,22 +9,39 @@ interface DurationSelectorProps {
   options?: number[];
 }
 
-export function DurationSelector({ 
-  value, 
-  onChange, 
-  options = [30, 60, 90, 120] 
+export function DurationSelector({
+  value,
+  onChange,
+  options = [30, 60, 90, 120],
 }: DurationSelectorProps) {
+  const { colors } = useThemedStyles();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Duration (minutes)</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>
+        Duration (minutes)
+      </Text>
       <View style={styles.selector}>
-        {options.map((mins) => (
+        {options.map(mins => (
           <TouchableOpacity
             key={mins}
-            style={[styles.button, value === mins && styles.buttonActive]}
+            style={[
+              styles.button,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              value === mins && {
+                backgroundColor: colors.primary,
+                borderColor: colors.primary,
+              },
+            ]}
             onPress={() => onChange(mins)}
           >
-            <Text style={[styles.buttonText, value === mins && styles.buttonTextActive]}>
+            <Text
+              style={[
+                styles.buttonText,
+                { color: colors.textSecondary },
+                value === mins && { color: colors.white },
+              ]}
+            >
               {mins}m
             </Text>
           </TouchableOpacity>
@@ -38,8 +56,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   label: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontSize: 14,
     marginBottom: spacing.xs,
     fontWeight: '600',
   },
@@ -51,22 +68,12 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
-    backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: colors.border,
     alignItems: 'center',
   },
-  buttonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
   buttonText: {
-    ...typography.body,
+    fontSize: 16,
     fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  buttonTextActive: {
-    color: colors.white,
   },
 });

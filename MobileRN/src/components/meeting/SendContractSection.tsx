@@ -1,5 +1,6 @@
 import { Button } from '@/components/Button';
-import { borderRadius, colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { borderRadius, spacing } from '@/utils/theme';
 import React, { useState } from 'react';
 import {
   Pressable,
@@ -30,6 +31,7 @@ export function SendContractSection({
   contractSent,
   onSend,
 }: SendContractSectionProps) {
+  const { colors } = useThemedStyles();
   const [inputValue, setInputValue] = useState('');
 
   const buttonTitle = contractSent
@@ -72,7 +74,6 @@ export function SendContractSection({
   };
 
   const handleChangeText = (text: string) => {
-    // Check for comma, space, or semicolon to add email
     if (text.endsWith(',') || text.endsWith(';') || text.endsWith(' ')) {
       const email = text.slice(0, -1);
       if (email.trim()) {
@@ -86,22 +87,35 @@ export function SendContractSection({
   const isDisabled = isSending || contractSent;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
+    >
       <View style={styles.header}>
         <Ionicons
           name="document-text-outline"
           size={24}
           color={colors.primary}
         />
-        <Text style={styles.title}>Send Meeting and Contract</Text>
+        <Text style={[styles.title, { color: colors.primary }]}>
+          Send Meeting and Contract
+        </Text>
       </View>
-      {/* <Text style={styles.description}>
-        Send a contract to your clients via email
-      </Text> */}
 
-      <Text style={styles.inputLabel}>Contract URL (Optional)</Text>
+      <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
+        Contract URL (Optional)
+      </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            borderColor: colors.border,
+            backgroundColor: colors.backgroundSecondary,
+            color: colors.text,
+          },
+        ]}
         placeholder="Uses default if empty"
         placeholderTextColor={colors.textSecondary}
         value={contractUrl}
@@ -112,11 +126,17 @@ export function SendContractSection({
         editable={!isDisabled}
       />
 
-      <Text style={styles.inputLabel}>Client Emails</Text>
+      <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
+        Client Emails
+      </Text>
       <View
         style={[
           styles.emailContainer,
-          isDisabled && styles.emailContainerDisabled,
+          {
+            borderColor: colors.border,
+            backgroundColor: colors.backgroundSecondary,
+          },
+          isDisabled && { backgroundColor: colors.surfaceLight },
         ]}
       >
         <ScrollView
@@ -126,8 +146,13 @@ export function SendContractSection({
           keyboardShouldPersistTaps="handled"
         >
           {clientEmails.map(email => (
-            <View key={email} style={styles.chip}>
-              <Text style={styles.chipText}>{email}</Text>
+            <View
+              key={email}
+              style={[styles.chip, { backgroundColor: colors.primary + '20' }]}
+            >
+              <Text style={[styles.chipText, { color: colors.primary }]}>
+                {email}
+              </Text>
               {!isDisabled && (
                 <Pressable
                   onPress={() => removeEmail(email)}
@@ -145,7 +170,7 @@ export function SendContractSection({
           ))}
           {!isDisabled && (
             <TextInput
-              style={styles.emailInput}
+              style={[styles.emailInput, { color: colors.text }]}
               placeholder={
                 clientEmails.length === 0
                   ? 'Enter email addresses'
@@ -164,7 +189,7 @@ export function SendContractSection({
           )}
         </ScrollView>
       </View>
-      <Text style={styles.hintText}>
+      <Text style={[styles.hintText, { color: colors.textSecondary }]}>
         Press space, comma, or enter to add email
       </Text>
 
@@ -176,23 +201,15 @@ export function SendContractSection({
         onPress={onSend}
         disabled={isSending || contractSent || clientEmails.length === 0}
       />
-      {/* {contractSent && (
-        <Text style={styles.sentText}>
-          Contract sent to {clientEmails.length} recipient
-          {clientEmails.length > 1 ? 's' : ''}
-        </Text>
-      )} */}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.sm,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.primary,
   },
   header: {
     flexDirection: 'row',
@@ -200,40 +217,27 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   title: {
-    ...typography.h3,
-    color: colors.primary,
+    fontSize: 18,
+    fontWeight: '600',
     marginLeft: spacing.sm,
   },
-  description: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.md,
-  },
   inputLabel: {
-    ...typography.bodySmall,
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
   input: {
-    ...typography.body,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: borderRadius.sm,
     padding: spacing.xs,
     marginBottom: spacing.md,
-    backgroundColor: colors.white,
   },
   emailContainer: {
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: borderRadius.sm,
     padding: spacing.xs,
     minHeight: 48,
-    backgroundColor: colors.white,
-  },
-  emailContainerDisabled: {
-    backgroundColor: colors.background,
   },
   chipsScrollContent: {
     flexDirection: 'row',
@@ -244,38 +248,29 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primary + '20',
     borderRadius: 16,
     paddingVertical: 4,
     paddingLeft: 12,
     paddingRight: 6,
   },
   chipText: {
-    ...typography.bodySmall,
-    color: colors.primary,
+    fontSize: 14,
     marginRight: 4,
   },
   chipRemove: {
     padding: 2,
   },
   emailInput: {
-    ...typography.body,
+    fontSize: 16,
     minWidth: 150,
     flex: 1,
     paddingVertical: 4,
     paddingHorizontal: 4,
   },
   hintText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontSize: 14,
     marginTop: spacing.xs,
     marginBottom: spacing.md,
     fontStyle: 'italic',
-  },
-  sentText: {
-    ...typography.body,
-    color: colors.secondary,
-    textAlign: 'center',
-    marginTop: spacing.md,
   },
 });

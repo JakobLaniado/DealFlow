@@ -1,5 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { colors } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { borderRadius, spacing } from '@/utils/theme';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
@@ -15,6 +16,7 @@ import {
 export const LoginScreen = () => {
   const navigation = useNavigation();
   const { login } = useAuth();
+  const { colors } = useThemedStyles();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,7 +29,6 @@ export const LoginScreen = () => {
 
     setLoading(true);
 
-    // Safety timeout - re-enable button after 10 seconds if login hangs
     const timeout = setTimeout(() => {
       setLoading(false);
       Alert.alert('Login Timeout', 'Login is taking too long. Please try again.');
@@ -49,14 +50,29 @@ export const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Welcome Back</Text>
+      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+        Sign in to continue
+      </Text>
 
-      <View style={styles.form}>
+      <View
+        style={[
+          styles.form,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.backgroundSecondary,
+              borderColor: colors.border,
+              color: colors.text,
+            },
+          ]}
           placeholder="Email"
+          placeholderTextColor={colors.textMuted}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -65,8 +81,16 @@ export const LoginScreen = () => {
         />
 
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.backgroundSecondary,
+              borderColor: colors.border,
+              color: colors.text,
+            },
+          ]}
           placeholder="Password"
+          placeholderTextColor={colors.textMuted}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -74,14 +98,20 @@ export const LoginScreen = () => {
         />
 
         <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            { backgroundColor: colors.primary },
+            loading && { backgroundColor: colors.surfaceLight, opacity: 0.6 },
+          ]}
           onPress={handleLogin}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={[styles.buttonText, { color: colors.white }]}>
+              Login
+            </Text>
           )}
         </TouchableOpacity>
 
@@ -89,7 +119,9 @@ export const LoginScreen = () => {
           style={styles.linkButton}
           onPress={() => navigation.navigate('Register' as never)}
         >
-          <Text style={styles.linkText}>Don't have an account? Register</Text>
+          <Text style={[styles.linkText, { color: colors.primaryLight }]}>
+            Don't have an account? Register
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -99,64 +131,47 @@ export const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing.lg,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 8,
-    color: colors.text,
+    marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 32,
-    color: '#666',
+    marginBottom: spacing.xl,
   },
   form: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
+    borderRadius: borderRadius.sm,
+    padding: spacing.md,
+    marginBottom: spacing.md,
     fontSize: 16,
-    backgroundColor: colors.white,
-    color: colors.text,
   },
   button: {
-    backgroundColor: colors.primary,
-    padding: 15,
-    borderRadius: 8,
+    padding: spacing.md,
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonDisabled: {
-    backgroundColor: colors.border,
+    marginTop: spacing.sm,
   },
   buttonText: {
-    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
   linkButton: {
-    marginTop: 20,
+    marginTop: spacing.lg,
     alignItems: 'center',
   },
   linkText: {
-    color: colors.primary,
     fontSize: 14,
   },
 });

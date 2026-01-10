@@ -1,14 +1,17 @@
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from './src/contexts/AuthContext';
+import { ThemeProvider } from './src/contexts/ThemeContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
 const App = () => {
   return (
     <GestureHandlerRootView style={styles.container}>
-      <AuthProvider>
-        <AppNavigator />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppNavigator />
+        </AuthProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 };

@@ -6,8 +6,9 @@ import {
 } from '@/components/meeting/EditFieldModal';
 import { SendContractSection } from '@/components/meeting/SendContractSection';
 import useAuth from '@/contexts/AuthContext';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { backendService } from '@/services/backend.service';
-import { borderRadius, colors, spacing, typography } from '@/utils/theme';
+import { borderRadius, spacing } from '@/utils/theme';
 import { useRoute } from '@react-navigation/native';
 import { useZoom } from '@zoom/meetingsdk-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -109,6 +110,7 @@ async function requestAndroidPermissions(): Promise<boolean> {
 export function JoinMeetingScreen() {
   const route = useRoute();
   const { user } = useAuth();
+  const { colors } = useThemedStyles();
   const { zoom, sdkReady } = useZoomSdkStatus();
 
   const params = route.params as RouteParams | undefined;
@@ -283,7 +285,7 @@ export function JoinMeetingScreen() {
   const canJoin = meetingId && displayName && sdkReady && !isJoining;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -291,8 +293,8 @@ export function JoinMeetingScreen() {
         {/* Header */}
         <View style={styles.headerSection}>
           <Ionicons name="videocam" size={48} color={colors.primary} />
-          <Text style={styles.title}>Join Meeting</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: colors.text }]}>Join Meeting</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             {sdkReady
               ? 'Ready to join your meeting'
               : 'Initializing Zoom SDK...'}
@@ -300,8 +302,15 @@ export function JoinMeetingScreen() {
         </View>
 
         {/* Meeting Details */}
-        <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Meeting Details</Text>
+        <View
+          style={[
+            styles.formSection,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Meeting Details
+          </Text>
 
           <EditableField
             label="Meeting ID"
@@ -322,9 +331,17 @@ export function JoinMeetingScreen() {
 
         {/* SDK Warning */}
         {!sdkReady && (
-          <View style={styles.warningSection}>
-            <Ionicons name="time-outline" size={20} color="#856404" />
-            <Text style={styles.warningText}>
+          <View
+            style={[
+              styles.warningSection,
+              {
+                backgroundColor: colors.warning + '20',
+                borderColor: colors.warning,
+              },
+            ]}
+          >
+            <Ionicons name="time-outline" size={20} color={colors.warning} />
+            <Text style={[styles.warningText, { color: colors.warning }]}>
               Waiting for Zoom SDK to initialize...
             </Text>
           </View>
@@ -373,7 +390,6 @@ export function JoinMeetingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -387,27 +403,25 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xs,
   },
   title: {
-    ...typography.h1,
+    fontSize: 32,
+    fontWeight: 'bold',
     marginTop: spacing.xs,
     marginBottom: spacing.sm,
     textAlign: 'center',
   },
   subtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
+    fontSize: 16,
     textAlign: 'center',
     paddingHorizontal: spacing.md,
   },
   formSection: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.primary,
     marginBottom: spacing.sm,
   },
   sectionTitle: {
-    ...typography.h3,
+    fontSize: 20,
     marginBottom: spacing.xs,
     fontWeight: '600',
   },
@@ -415,15 +429,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff3cd',
-    borderRadius: 8,
+    borderRadius: borderRadius.sm,
     padding: spacing.md,
     marginBottom: spacing.lg,
     gap: spacing.sm,
+    borderWidth: 1,
   },
   warningText: {
-    ...typography.body,
-    color: '#856404',
+    fontSize: 16,
   },
   contractWrapper: {
     marginBottom: spacing.md,

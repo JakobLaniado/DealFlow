@@ -1,4 +1,5 @@
-import { borderRadius, colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { borderRadius, spacing } from '@/utils/theme';
 import React from 'react';
 import {
   StyleSheet,
@@ -24,20 +25,39 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
+  const { colors } = useThemedStyles();
+
+  const getButtonStyle = (): ViewStyle => {
+    switch (variant) {
+      case 'primary':
+        return { backgroundColor: colors.primary };
+      case 'secondary':
+        return { backgroundColor: colors.secondary };
+      case 'outline':
+        return {
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderColor: colors.primary,
+        };
+      default:
+        return { backgroundColor: colors.primary };
+    }
+  };
+
+  const getTextColor = () => {
+    if (disabled) return colors.textMuted;
+    if (variant === 'outline') return colors.primary;
+    return colors.white;
+  };
+
   const buttonStyle: ViewStyle[] = [
     styles.button,
-    styles[`button_${variant}`],
+    getButtonStyle(),
     styles[`button_${size}`],
-    fullWidth && styles.fullWidth,
-    disabled && styles.buttonDisabled,
+    fullWidth ? styles.fullWidth : {},
+    disabled ? { backgroundColor: colors.surfaceLight, opacity: 0.5 } : {},
     style as ViewStyle,
-  ];
-
-  const textStyle = [
-    typography.button,
-    styles[`text_${variant}`],
-    disabled && styles.textDisabled,
-  ];
+  ].filter(Boolean);
 
   return (
     <TouchableOpacity
@@ -46,7 +66,7 @@ export const Button: React.FC<ButtonProps> = ({
       activeOpacity={0.7}
       {...props}
     >
-      <Text style={textStyle}>{title}</Text>
+      <Text style={[styles.buttonText, { color: getTextColor() }]}>{title}</Text>
     </TouchableOpacity>
   );
 };
@@ -56,17 +76,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  button_primary: {
-    backgroundColor: colors.secondary,
-  },
-  button_secondary: {
-    backgroundColor: colors.primary,
-  },
-  button_outline: {
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderColor: colors.primary,
   },
   button_small: {
     paddingVertical: spacing.sm,
@@ -80,21 +89,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.xl,
   },
-  buttonDisabled: {
-    backgroundColor: colors.border,
-    opacity: 0.5,
-  },
-  text_primary: {
-    color: colors.white,
-  },
-  text_secondary: {
-    color: colors.white,
-  },
-  text_outline: {
-    color: colors.primary,
-  },
-  textDisabled: {
-    color: colors.textLight,
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   fullWidth: {
     width: '100%',

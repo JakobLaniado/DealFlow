@@ -1,4 +1,5 @@
-import { colors, spacing } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { spacing } from '@/utils/theme';
 import React from 'react';
 import {
   Image,
@@ -20,8 +21,15 @@ export const Header: React.FC<HeaderProps> = ({
   onProfilePress,
   logoSize = 100,
 }) => {
+  const { colors } = useThemedStyles();
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.surface, borderBottomColor: colors.border },
+      ]}
+    >
       {showProfile && (
         <TouchableOpacity onPress={onProfilePress} style={styles.profileButton}>
           <Ionicons
@@ -49,7 +57,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.white,
+    borderBottomWidth: 1,
   },
   profileButton: {
     padding: spacing.xs,

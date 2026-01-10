@@ -1,11 +1,14 @@
 import { Button } from '@/components/Button';
 import useAuth from '@/contexts/AuthContext';
-import { borderRadius, colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { borderRadius, spacing } from '@/utils/theme';
 import React from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export function ProfileScreen() {
   const { user, logout } = useAuth();
+  const { colors, typography, isDark, toggleTheme } = useThemedStyles();
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -15,35 +18,80 @@ export function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>
+        <View
+          style={[styles.avatarContainer, { backgroundColor: colors.primary }]}
+        >
+          <Text style={[styles.avatarText, { color: colors.white }]}>
             {user?.name?.charAt(0).toUpperCase() || 'U'}
           </Text>
         </View>
 
-        <Text style={styles.name}>{user?.name}</Text>
-        <Text style={styles.role}>
+        <Text style={[styles.name, { color: colors.text }]}>{user?.name}</Text>
+        <Text style={[styles.role, { color: colors.textSecondary }]}>
           {user?.role === 'seller' ? 'Seller' : 'Client'}
         </Text>
 
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{user?.email}</Text>
+        {/* Theme Toggle Card */}
+        <View
+          style={[
+            styles.infoCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <View style={styles.themeRow}>
+            <View style={styles.themeInfo}>
+              <Ionicons
+                name={isDark ? 'moon' : 'sunny'}
+                size={24}
+                color={colors.primary}
+              />
+              <Text style={[styles.themeLabel, { color: colors.text }]}>
+                {isDark ? 'Dark Mode' : 'Light Mode'}
+              </Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor={colors.white}
+            />
           </View>
-          <View style={styles.divider} />
+        </View>
+
+        {/* User Info Card */}
+        <View
+          style={[
+            styles.infoCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Account Type</Text>
-            <Text style={styles.infoValue}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+              Email
+            </Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>
+              {user?.email}
+            </Text>
+          </View>
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+              Account Type
+            </Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>
               {user?.role === 'seller' ? 'Seller' : 'Client'}
             </Text>
           </View>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>User ID</Text>
-            <Text style={styles.infoValueSmall}>{user?.id}</Text>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+              User ID
+            </Text>
+            <Text style={[styles.infoValueSmall, { color: colors.textLight }]}>
+              {user?.id}
+            </Text>
           </View>
         </View>
 
@@ -63,7 +111,6 @@ export function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -75,55 +122,63 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
   avatarText: {
-    ...typography.h1,
-    color: colors.white,
     fontSize: 40,
+    fontWeight: 'bold',
   },
   name: {
-    ...typography.h2,
+    fontSize: 24,
+    fontWeight: 'bold',
     marginBottom: spacing.xs,
   },
   role: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.xl,
+    fontSize: 16,
+    marginBottom: spacing.lg,
+  },
+  themeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+  },
+  themeInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  themeLabel: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   infoCard: {
     width: '100%',
-    backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    marginBottom: spacing.xl,
+    marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   infoRow: {
     paddingVertical: spacing.sm,
   },
   infoLabel: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontSize: 14,
     marginBottom: spacing.xs,
   },
   infoValue: {
-    ...typography.body,
-    color: colors.text,
+    fontSize: 16,
   },
   infoValueSmall: {
-    ...typography.bodySmall,
-    color: colors.text,
+    fontSize: 14,
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border,
   },
   logoutButton: {
     maxWidth: 300,
+    marginTop: spacing.md,
   },
 });

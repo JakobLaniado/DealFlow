@@ -1,4 +1,5 @@
-import { colors, spacing, typography } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { spacing } from '@/utils/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -18,22 +19,34 @@ export function MeetingInfoCard({
   onCopy,
   valueStyle = 'default',
 }: MeetingInfoCardProps) {
+  const { colors } = useThemedStyles();
+
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
+    >
       <View style={styles.header}>
         <Ionicons name={icon} size={20} color={colors.primary} />
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
       </View>
       <View style={styles.row}>
         <Text
           style={[
-            valueStyle === 'link' ? styles.linkValue : styles.value,
+            valueStyle === 'link'
+              ? [styles.linkValue, { color: colors.primary }]
+              : [styles.value, { color: colors.text }],
           ]}
           numberOfLines={valueStyle === 'link' ? 1 : undefined}
         >
           {value}
         </Text>
-        <TouchableOpacity onPress={onCopy} style={styles.copyButton}>
+        <TouchableOpacity
+          onPress={onCopy}
+          style={[styles.copyButton, { backgroundColor: colors.backgroundSecondary }]}
+        >
           <Ionicons name="copy-outline" size={20} color={colors.primary} />
         </TouchableOpacity>
       </View>
@@ -43,17 +56,10 @@ export function MeetingInfoCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
     borderRadius: 12,
     padding: spacing.md,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   header: {
     flexDirection: 'row',
@@ -62,8 +68,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   label: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontSize: 14,
     fontWeight: '600',
   },
   row: {
@@ -72,21 +77,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   value: {
-    ...typography.body,
     flex: 1,
     fontWeight: '600',
     fontSize: 16,
   },
   linkValue: {
-    ...typography.bodySmall,
     flex: 1,
-    color: colors.primary,
+    fontSize: 14,
     fontWeight: '500',
   },
   copyButton: {
     padding: spacing.xs,
     marginLeft: spacing.sm,
-    backgroundColor: colors.background,
     borderRadius: 6,
   },
 });
