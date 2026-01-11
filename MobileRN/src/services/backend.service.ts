@@ -254,7 +254,44 @@ export const backendService = {
   },
 
   /**
-   * Send contract to client via email
+   * Register/update FCM token for push notifications
+   */
+  async registerFcmToken(params: {
+    userId: string;
+    fcmToken: string;
+    platform: 'ios' | 'android';
+  }): Promise<BackendResponse<{ success: boolean }>> {
+    try {
+      const response = await fetch(`${BACKEND_URL}/users/fcm-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || 'Failed to register FCM token',
+        };
+      }
+
+      return {
+        success: true,
+        data: { success: true },
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Network error',
+      };
+    }
+  },
+
+  /**
+   * Send contract to client via email and push notification
    */
   async sendContract(params: {
     clientEmail: string;

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import supabase from "../config/db";
 import { sendContractEmail } from "../services/email.service";
+import { sendContractNotification } from "../services/fcm.service";
 import { getMeetingById } from "../services/meeting.service";
 
 export const contractRouter = Router();
@@ -20,21 +21,17 @@ contractRouter.post("/send", async (req, res) => {
   }
 
   const { clientEmail, sellerUserId, meetingId, contractUrl: providedContractUrl } = parsed.data;
-  // Use provided URL from seller, or fall back to env default
   const contractUrl = providedContractUrl || process.env.CONTRACT_URL || "https://docs.google.com/";
 
   try {
-    // Try to find client by email, but proceed even if not found in DB
     const { data: client } = await supabase
       .from("users")
       .select("id, email, name")
       .eq("email", clientEmail)
       .single();
 
-    // Use client name if found, otherwise use email
     const clientName = client?.name || clientEmail.split("@")[0];
 
-    // Get seller info
     const { data: seller, error: sellerError } = await supabase
       .from("users")
       .select("id, email, name")
@@ -45,7 +42,6 @@ contractRouter.post("/send", async (req, res) => {
       return res.status(404).json({ error: "Seller not found" });
     }
 
-    // Get meeting info if provided
     let meetingTitle: string | undefined;
     let zoomMeetingId: string | undefined;
     let zoomPassword: string | undefined;
@@ -61,7 +57,6 @@ contractRouter.post("/send", async (req, res) => {
       }
     }
 
-    // Send email
     const emailSent = await sendContractEmail({
       to: clientEmail,
       clientName,
@@ -78,15 +73,22 @@ contractRouter.post("/send", async (req, res) => {
       return res.status(500).json({ error: "Failed to send email" });
     }
 
-    // TODO: Send FCM push notification
+    const fcmResult = await sendContractNotification(
+      clientEmail,
+      seller.name,
+      contractUrl,
+      meetingId,
+      zoomMeetingId,
+      zoomPassword
+    );
 
     res.json({
       success: true,
       message: "Contract sent successfully",
       contractUrl,
+      notificationSent: fcmResult.success,
     });
   } catch (err: any) {
-    console.error("[Contract] Send error:", err);
     res.status(500).json({ error: err?.message || "Failed to send contract" });
   }
 });

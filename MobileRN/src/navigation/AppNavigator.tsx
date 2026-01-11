@@ -2,14 +2,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
-import { ActivityIndicator, Linking, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
 
 const Stack = createNativeStackNavigator();
 
 const linking: LinkingOptions<any> = {
-  prefixes: ['DealFlow://'],
+  prefixes: ['dealflow://'],
   config: {
     screens: {
       Main: {
@@ -33,18 +33,6 @@ const linking: LinkingOptions<any> = {
 
 export const AppNavigator = () => {
   const { isAuthenticated, loading } = useAuth();
-
-  React.useEffect(() => {
-    Linking.getInitialURL().then(url => {
-      console.log('INITIAL URL:', url);
-    });
-
-    const sub = Linking.addEventListener('url', ({ url }) => {
-      console.log('RUNTIME URL:', url);
-    });
-
-    return () => sub.remove();
-  }, []);
 
   if (loading) {
     return (
