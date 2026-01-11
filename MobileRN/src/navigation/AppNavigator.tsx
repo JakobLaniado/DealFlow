@@ -1,8 +1,9 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import BootSplash from 'react-native-bootsplash';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
 
@@ -33,6 +34,12 @@ const linking: LinkingOptions<any> = {
 
 export const AppNavigator = () => {
   const { isAuthenticated, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading) {
+      BootSplash.hide({ fade: true });
+    }
+  }, [loading]);
 
   if (loading) {
     return (
