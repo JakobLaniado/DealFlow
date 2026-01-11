@@ -6,20 +6,30 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Button } from './Button';
-import { colors, spacing, typography, borderRadius } from '@/utils/theme';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { spacing, borderRadius } from '@/utils/theme';
 
 interface ContractModalProps {
   visible: boolean;
+  sellerName?: string;
   onReview: () => void;
+  onJoinMeeting?: () => void;
   onDismiss: () => void;
+  hasMeetingLink?: boolean;
 }
 
 export const ContractModal: React.FC<ContractModalProps> = ({
   visible,
+  sellerName,
   onReview,
+  onJoinMeeting,
   onDismiss,
+  hasMeetingLink = false,
 }) => {
+  const { colors } = useThemedStyles();
+
   return (
     <Modal
       visible={visible}
@@ -28,10 +38,16 @@ export const ContractModal: React.FC<ContractModalProps> = ({
       onRequestClose={onDismiss}
     >
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <Text style={styles.title}>New Contract Received</Text>
-          <Text style={styles.description}>
-            The seller has sent for contract for your review.
+        <View style={[styles.modal, { backgroundColor: colors.surface }]}>
+          <View style={[styles.iconContainer, { backgroundColor: colors.primary + '20' }]}>
+            <Ionicons name="document-text" size={40} color={colors.primary} />
+          </View>
+
+          <Text style={[styles.title, { color: colors.text }]}>
+            New Contract Received
+          </Text>
+          <Text style={[styles.description, { color: colors.textSecondary }]}>
+            {sellerName ? `${sellerName} has` : 'The seller has'} sent a contract for your review.
           </Text>
 
           <View style={styles.buttonContainer}>
@@ -41,13 +57,25 @@ export const ContractModal: React.FC<ContractModalProps> = ({
               size="large"
               fullWidth
               onPress={onReview}
-              style={styles.reviewButton}
             />
+
+            {hasMeetingLink && onJoinMeeting && (
+              <Button
+                title="JOIN MEETING"
+                variant="outline"
+                size="large"
+                fullWidth
+                onPress={onJoinMeeting}
+              />
+            )}
+
             <TouchableOpacity
-              style={styles.dismissButton}
+              style={[styles.dismissButton, { borderColor: colors.border }]}
               onPress={onDismiss}
             >
-              <Text style={styles.dismissText}>Dismiss</Text>
+              <Text style={[styles.dismissText, { color: colors.textSecondary }]}>
+                Dismiss
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -59,44 +87,50 @@ export const ContractModal: React.FC<ContractModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
   },
   modal: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     padding: spacing.xl,
     width: '100%',
     maxWidth: 400,
+    alignItems: 'center',
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   title: {
-    ...typography.h2,
-    marginBottom: spacing.md,
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   description: {
-    ...typography.body,
-    color: colors.textSecondary,
+    fontSize: 16,
     textAlign: 'center',
     marginBottom: spacing.xl,
+    lineHeight: 22,
   },
   buttonContainer: {
+    width: '100%',
     gap: spacing.md,
-  },
-  reviewButton: {
-    marginBottom: spacing.sm,
   },
   dismissButton: {
     padding: spacing.md,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.primary,
+    borderWidth: 1,
     borderRadius: borderRadius.md,
   },
   dismissText: {
-    ...typography.button,
-    color: colors.primary,
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

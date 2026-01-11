@@ -25,7 +25,7 @@ function generateDeepLink(zoomMeetingId: string, password?: string): string {
   if (password) {
     params.append("password", password);
   }
-  return `DealFlow://join?${params.toString()}`;
+  return `dealflow://join?${params.toString()}`;
 }
 
 function generateEmailHtml(params: SendContractEmailParams): string {
