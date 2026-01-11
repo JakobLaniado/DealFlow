@@ -75,6 +75,31 @@ For development without video features, you can conditionally exclude Zoom SDK i
 ### Android Works on Emulator
 Android emulators work fine with the Zoom SDK on both Intel and Apple Silicon Macs.
 
+### Required: Zoom SDK Android Patch
+
+The project uses `patch-package` to apply critical fixes to `@zoom/meetingsdk-react-native`. The patch is located at `MobileRN/patches/@zoom+meetingsdk-react-native+6.6.0.patch` and is automatically applied during `npm install`.
+
+**What the patch fixes:**
+
+1. **Deprecated jcenter() repository** - Comments out `jcenter()` references in `build.gradle` (jcenter was deprecated and shut down)
+
+2. **Null MeetingService crash** - Adds a null check for `MeetingService` before joining meetings. Without this, the app crashes if the SDK isn't fully initialized when attempting to join.
+
+3. **Better error messages** - Improves error handling with actual exception messages instead of generic failures, making debugging much easier.
+
+4. **WritableMap rejection fix** - Fixes promise rejections that passed `null` as `WritableMap`, which caused crashes on newer React Native versions.
+
+**If the patch doesn't apply:**
+```bash
+cd MobileRN
+npx patch-package
+```
+
+**If you need to recreate the patch after modifying node_modules:**
+```bash
+npx patch-package @zoom/meetingsdk-react-native
+```
+
 ---
 
 ## Environment Variables
